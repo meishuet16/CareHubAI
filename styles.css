@@ -90,6 +90,23 @@ h1 {
   margin-bottom: 0;
 }
 
+.ward-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ward-context span {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+  padding: 6px 9px;
+}
+
 .demo-controls {
   display: flex;
   flex-wrap: wrap;
@@ -108,7 +125,8 @@ h1 {
 .primary-card,
 .panel,
 .readings article,
-.reason-list article {
+.reason-list article,
+.task-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -456,6 +474,20 @@ h3 {
   font-weight: 750;
 }
 
+.packet-view {
+  background: #10242c;
+  border: 1px solid #203a43;
+  border-radius: 9px;
+  color: #d7f5ef;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.74rem;
+  margin: 10px 0 0;
+  max-height: 180px;
+  overflow: auto;
+  padding: 12px;
+  white-space: pre-wrap;
+}
+
 .event-item {
   border-left: 5px solid var(--red);
 }
@@ -496,7 +528,8 @@ h3 {
 
   .focus-grid,
   .lower-grid,
-  .patient-data {
+  .patient-data,
+  .nurse-tasks {
     grid-template-columns: 1fr;
   }
 }
@@ -513,7 +546,8 @@ h3 {
   .summary-row,
   .pressure-map,
   .bed-map,
-  .prototype-flow {
+  .prototype-flow,
+  .ai-breakdown {
     grid-template-columns: 1fr;
   }
 }
