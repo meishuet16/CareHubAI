@@ -85,6 +85,7 @@ export function calculateBedRisk(bed) {
     level,
     explanation,
     recommendedAction,
+    alertAgeLabel: buildAlertAgeLabel(level, bed.pressure.highDurationSec),
   };
 }
 
@@ -102,7 +103,14 @@ export function buildDashboardState(beds) {
       monitor: enrichedBeds.filter((bed) => bed.level === "Monitor").length,
       stable: enrichedBeds.filter((bed) => bed.level === "Stable").length,
       acknowledged: enrichedBeds.filter((bed) => bed.level === "Acknowledged").length,
+      totalBeds: enrichedBeds.length,
+      activeBeds: enrichedBeds.filter((bed) => bed.level !== "Stable").length,
+      ivEndingSoon: enrichedBeds.filter((bed) => bed.iv.level !== "Normal").length,
+      avgPriorityScore: round(
+        enrichedBeds.reduce((total, bed) => total + bed.priorityScore, 0) / enrichedBeds.length,
+      ),
     },
+    eventLog: buildEventLog(enrichedBeds),
   };
 }
 
@@ -141,4 +149,22 @@ function buildRecommendedAction(pressure, iv) {
   if (iv.level === "Monitor") actions.push("Prepare IV replacement");
 
   return actions.length > 0 ? actions.join(" and ") : "No immediate action needed";
+}
+
+function buildAlertAgeLabel(level, highDurationSec) {
+  if (level === "Stable") return "No active alert";
+  if (highDurationSec > 0) return `${highDurationSec} sec`;
+  return "New alert";
+}
+
+function buildEventLog(beds) {
+  return beds
+    .filter((bed) => bed.level === "Urgent" || bed.level === "Monitor")
+    .sort(comparePriority)
+    .map((bed) => ({
+      bedId: bed.id,
+      level: bed.level,
+      message: `${bed.id}: ${bed.explanation}`,
+      action: bed.recommendedAction,
+    }));
 }
