@@ -53,6 +53,8 @@ const elements = {
   criticalAction: document.querySelector("#critical-action"),
   criticalReason: document.querySelector("#critical-reason"),
   pressureMap: document.querySelector("#pressure-map"),
+  ivFill: document.querySelector("#iv-fill"),
+  ivStatusLabel: document.querySelector("#iv-status-label"),
   liveScore: document.querySelector("#live-score"),
   liveIv: document.querySelector("#live-iv"),
   liveAge: document.querySelector("#live-age"),
@@ -81,16 +83,18 @@ function render() {
   const priorityBed = state.criticalBed;
   const selectedBed = state.beds.find((bed) => bed.id === selectedBedId) || priorityBed;
   const focusBed = selectedBed.level === "Stable" ? priorityBed : selectedBed;
+  const visualization = buildVisualizationState(state.beds, focusBed.id);
   selectedBedId = focusBed.id;
 
   renderClock();
   renderSummary(state.summary);
   renderPrimaryDecision(state.nurseDecision, focusBed);
-  renderPressureMap(focusBed);
+  renderPressureMap(visualization.pressureZones);
+  renderIvBag(visualization.ivBag);
   renderNurseTasks(focusBed.nurseTasks);
-  renderAiSummary(focusBed);
+  renderAiSummary(focusBed, visualization.triagePipeline);
   renderPriorityList(state.priorityQueue, focusBed.id);
-  renderBedMap(state.beds, focusBed.id);
+  renderBedMap(visualization);
   renderPrototypeFlow(state.prototypeFlow);
   renderEventLog(state.eventLog);
   renderHardwareStatus();
@@ -128,14 +132,20 @@ function renderPrimaryDecision(decision, bed) {
   elements.liveAge.textContent = bed.alertAgeLabel;
 }
 
-function renderPressureMap(bed) {
+function renderPressureMap(pressureZones) {
   elements.pressureMap.replaceChildren();
-  bed.pressure.zones.forEach((value, index) => {
-    const zone = document.createElement("div");
-    zone.className = `pressure-zone ${getZoneClass(value)}`;
-    zone.innerHTML = `<span>Zone ${index + 1}</span><strong>${value}</strong>`;
-    elements.pressureMap.append(zone);
+  pressureZones.forEach((pressureZone) => {
+    const zoneElement = document.createElement("div");
+    zoneElement.className = `pressure-zone ${getZoneClass(pressureZone.value)}`;
+    zoneElement.innerHTML = `<span>${pressureZone.label}</span><strong>${pressureZone.value}</strong><small>${pressureZone.level}</small>`;
+    elements.pressureMap.append(zoneElement);
   });
+}
+
+function renderIvBag(ivBag) {
+  elements.ivFill.style.height = `${ivBag.fillPercent}%`;
+  elements.ivFill.className = `iv-fill ${ivBag.status.toLowerCase()}`;
+  elements.ivStatusLabel.textContent = `${ivBag.status} · ${ivBag.remainingMl} ml`;
 }
 
 function renderNurseTasks(tasks) {
@@ -153,17 +163,18 @@ function renderNurseTasks(tasks) {
   });
 }
 
-function renderAiSummary(bed) {
+function renderAiSummary(bed, triagePipeline) {
   elements.rawSignalCopy.textContent = `Pressure ${bed.pressure.level} · IV ${bed.iv.level}`;
   elements.riskPatternCopy.textContent = `${bed.level} · Score ${bed.priorityScore}`;
   elements.responseCopy.textContent = bed.recommendedAction;
   elements.aiBreakdown.replaceChildren();
-  bed.aiExplanation.forEach((item) => {
+  triagePipeline.forEach((item, index) => {
     const row = document.createElement("article");
+    row.className = index === 2 ? "active" : "";
     row.innerHTML = `
       <span>${item.label}</span>
       <strong>${item.value}</strong>
-      <small>${item.detail}</small>
+      <small>${item.status}</small>
     `;
     elements.aiBreakdown.append(row);
   });
@@ -184,7 +195,7 @@ function renderPriorityList(queue, focusBedId) {
   otherBeds.forEach((bed, index) => {
     const item = document.createElement("button");
     item.type = "button";
-    item.className = `queue-item ${bed.level.toLowerCase()}`;
+    item.className = `queue-item dispatch-ticket ${bed.level.toLowerCase()}`;
     item.dataset.select = bed.id;
     item.innerHTML = `
       <span>${index + 2}. ${bed.id}</span>
@@ -195,17 +206,39 @@ function renderPriorityList(queue, focusBedId) {
   });
 }
 
-function renderBedMap(enrichedBeds, focusBedId) {
+function renderBedMap(visualization) {
   elements.bedMap.replaceChildren();
-  enrichedBeds.forEach((bed) => {
+  const route = document.createElement("div");
+  route.className = "nurse-route";
+  route.innerHTML = `
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <line
+        x1="${visualization.nurseRoute.from.x + 10}"
+        y1="${visualization.nurseRoute.from.y + 8}"
+        x2="${visualization.nurseRoute.to.x + 15}"
+        y2="${visualization.nurseRoute.to.y + 12}"
+      />
+    </svg>
+  `;
+  elements.bedMap.append(route);
+
+  const station = document.createElement("div");
+  station.className = "nurse-station";
+  station.style.left = `${visualization.nurseRoute.from.x}%`;
+  station.style.top = `${visualization.nurseRoute.from.y}%`;
+  station.textContent = visualization.nurseRoute.from.label;
+  elements.bedMap.append(station);
+
+  visualization.wardBeds.forEach((bed) => {
     const tile = document.createElement("button");
     tile.type = "button";
     tile.dataset.select = bed.id;
-    tile.className = `bed-tile ${bed.level.toLowerCase()} ${bed.id === focusBedId ? "selected" : ""}`;
+    tile.className = `bed-tile ${bed.level.toLowerCase()} ${bed.selected ? "selected" : ""}`;
+    tile.style.left = `${bed.x}%`;
+    tile.style.top = `${bed.y}%`;
     tile.innerHTML = `
       <span>${bed.id}</span>
       <strong>${bed.level}</strong>
-      <small>${bed.recommendedAction}</small>
       <b>${bed.priorityScore}</b>
     `;
     elements.bedMap.append(tile);
@@ -350,11 +383,12 @@ function buildDashboardState(sourceBeds) {
   const priorityQueue = enrichedBeds
     .filter((bed) => bed.level !== "Stable" && bed.level !== "Acknowledged")
     .sort(comparePriority);
+  const criticalBed = priorityQueue[0] || enrichedBeds[0];
 
   return {
     beds: enrichedBeds,
     priorityQueue,
-    criticalBed: priorityQueue[0] || enrichedBeds[0],
+    criticalBed,
     nextAction: buildNextAction(priorityQueue[0]),
     nurseDecision: buildNurseDecision(priorityQueue),
     summary: {
@@ -372,6 +406,7 @@ function buildDashboardState(sourceBeds) {
     eventLog: buildEventLog(enrichedBeds),
     sensorPipeline: buildSensorPipeline(),
     prototypeFlow: buildPrototypeFlow(),
+    visualization: buildVisualizationState(enrichedBeds, criticalBed.id),
   };
 }
 
@@ -457,6 +492,69 @@ function buildDemoScenarioBeds(sourceBeds, scenario) {
 
     return bed;
   });
+}
+
+function buildVisualizationState(enrichedBeds, selectedBedId) {
+  const selectedBed = enrichedBeds.find((bed) => bed.id === selectedBedId) || enrichedBeds[0];
+  const wardSlots = [
+    { x: 18, y: 24 },
+    { x: 58, y: 18 },
+    { x: 18, y: 62 },
+    { x: 58, y: 58 },
+  ];
+  const nurseStation = { label: "Nurse Station", x: 8, y: 8 };
+
+  return {
+    pressureZones: selectedBed.pressure.zones.map((value, index) => ({
+      label: ["Head", "Back", "Hip", "Leg"][index],
+      value,
+      level: value >= 70 ? "High" : value >= 40 ? "Medium" : "Low",
+    })),
+    ivBag: {
+      fillPercent: round(clamp((selectedBed.iv.remainingMl / 500) * 100)),
+      remainingMl: selectedBed.iv.remainingMl,
+      status: selectedBed.iv.abnormalFlow
+        ? "Abnormal"
+        : selectedBed.iv.remainingMl <= 50
+          ? "Low"
+          : "Normal",
+    },
+    wardBeds: enrichedBeds.map((bed, index) => ({
+      id: bed.id,
+      level: bed.level,
+      priorityScore: bed.priorityScore,
+      selected: bed.id === selectedBedId,
+      x: wardSlots[index % wardSlots.length].x,
+      y: wardSlots[index % wardSlots.length].y,
+    })),
+    nurseRoute: {
+      targetBedId: selectedBed.id,
+      from: nurseStation,
+      to: wardSlots[enrichedBeds.findIndex((bed) => bed.id === selectedBed.id)] || wardSlots[0],
+    },
+    triagePipeline: [
+      {
+        label: "Pressure",
+        value: `${selectedBed.pressure.score}/100`,
+        status: selectedBed.pressure.level,
+      },
+      {
+        label: "IV",
+        value: `${selectedBed.iv.score}/100`,
+        status: selectedBed.iv.level,
+      },
+      {
+        label: "AI Triage",
+        value: `${selectedBed.priorityScore}/100`,
+        status: "Prioritizing",
+      },
+      {
+        label: "Nurse Task",
+        value: selectedBed.id,
+        status: selectedBed.recommendedAction,
+      },
+    ],
+  };
 }
 
 function toNumber(value) {
