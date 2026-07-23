@@ -79,22 +79,35 @@
 
           <div class="patient-data">
             <div>
-              <h3>Pressure Mat</h3>
-              <div id="pressure-map" class="pressure-map"></div>
+              <div class="viz-heading">
+                <h3>Smart Bed Pressure Map</h3>
+                <span>Mattress top view</span>
+              </div>
+              <div id="pressure-map" class="pressure-map mattress-map"></div>
             </div>
-            <div class="readings">
-              <article>
-                <span>AI Priority</span>
-                <strong id="live-score">0 / 100</strong>
-              </article>
-              <article>
-                <span>IV Remaining</span>
-                <strong id="live-iv">--</strong>
-              </article>
-              <article>
-                <span>Alert Age</span>
-                <strong id="live-age">--</strong>
-              </article>
+            <div class="visual-stack">
+              <div class="iv-visual">
+                <div class="iv-hook"></div>
+                <div class="iv-bag">
+                  <div id="iv-fill" class="iv-fill"></div>
+                  <span id="iv-status-label">Normal</span>
+                </div>
+                <div class="iv-line"></div>
+              </div>
+              <div class="readings">
+                <article>
+                  <span>AI Priority</span>
+                  <strong id="live-score">0 / 100</strong>
+                </article>
+                <article>
+                  <span>IV Remaining</span>
+                  <strong id="live-iv">--</strong>
+                </article>
+                <article>
+                  <span>Alert Age</span>
+                  <strong id="live-age">--</strong>
+                </article>
+              </div>
             </div>
           </div>
 
@@ -112,7 +125,7 @@
             <div class="card-heading">
               <div>
                 <p class="eyebrow">AI Care Summary</p>
-                <h2>Why this patient?</h2>
+                <h2>Triage Pipeline</h2>
               </div>
             </div>
             <div class="reason-list">
@@ -129,15 +142,15 @@
                 <strong id="response-copy">Reposition patient</strong>
               </article>
             </div>
-            <div id="ai-breakdown" class="ai-breakdown"></div>
+            <div id="ai-breakdown" class="ai-breakdown triage-pipeline"></div>
           </section>
 
           <section class="panel">
-            <div class="card-heading">
-              <div>
-                <p class="eyebrow">Next In Queue</p>
-                <h2>Other Beds</h2>
-              </div>
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Next In Queue</p>
+              <h2>Dispatch Queue</h2>
+            </div>
               <span id="shift-time" class="time-pill">--:--</span>
             </div>
             <div id="priority-list" class="priority-list"></div>
@@ -150,10 +163,10 @@
           <div class="card-heading">
             <div>
               <p class="eyebrow">Ward Map</p>
-              <h2>Four-Bed Demo</h2>
+              <h2>Nurse Route View</h2>
             </div>
           </div>
-          <div id="bed-map" class="bed-map"></div>
+          <div id="bed-map" class="bed-map ward-floor"></div>
         </section>
 
         <section class="panel">
