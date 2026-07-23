@@ -3,6 +3,7 @@ import {
   applyHardwareReading,
   buildDashboardState,
   buildDemoScenarioBeds,
+  buildVisualizationState,
   calculateBedRisk,
   acknowledgeAlert,
   normalizeHardwareReading,
@@ -180,5 +181,25 @@ const rushScenario = buildDemoScenarioBeds(beds, "multi-bed-rush");
 const rushDashboard = buildDashboardState(rushScenario);
 assert.equal(rushDashboard.summary.urgent, 3);
 assert.equal(rushDashboard.priorityQueue.length, 3);
+
+const visualization = buildVisualizationState(rushDashboard.beds, rushDashboard.criticalBed.id);
+assert.deepEqual(
+  visualization.pressureZones.map((zone) => zone.label),
+  ["Head", "Back", "Hip", "Leg"],
+);
+assert.equal(visualization.pressureZones[2].level, "High");
+assert.equal(visualization.ivBag.fillPercent, 7);
+assert.equal(visualization.ivBag.status, "Low");
+assert.equal(visualization.wardBeds.length, 3);
+assert.equal(visualization.wardBeds[2].selected, true);
+assert.equal(visualization.nurseRoute.targetBedId, "Bed 03");
+assert.equal(visualization.nurseRoute.from.label, "Nurse Station");
+assert.equal(visualization.nurseRoute.from.x, 8);
+assert.equal(visualization.triagePipeline.length, 4);
+assert.deepEqual(
+  visualization.triagePipeline.map((step) => step.label),
+  ["Pressure", "IV", "AI Triage", "Nurse Task"],
+);
+assert.equal(visualization.triagePipeline[2].status, "Prioritizing");
 
 console.log("carehub-core tests passed");
