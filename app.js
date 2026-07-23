@@ -37,6 +37,7 @@ let hardwareStatus = {
   message: "Waiting in simulated mode",
   lastUpdatedAt: null,
 };
+let latestHardwarePacket = { mode: "simulated" };
 
 const elements = {
   shiftTime: document.querySelector("#shift-time"),
@@ -55,9 +56,11 @@ const elements = {
   liveScore: document.querySelector("#live-score"),
   liveIv: document.querySelector("#live-iv"),
   liveAge: document.querySelector("#live-age"),
+  nurseTasks: document.querySelector("#nurse-tasks"),
   rawSignalCopy: document.querySelector("#raw-signal-copy"),
   riskPatternCopy: document.querySelector("#risk-pattern-copy"),
   responseCopy: document.querySelector("#response-copy"),
+  aiBreakdown: document.querySelector("#ai-breakdown"),
   priorityList: document.querySelector("#priority-list"),
   bedMap: document.querySelector("#bed-map"),
   prototypeFlow: document.querySelector("#prototype-flow"),
@@ -65,6 +68,7 @@ const elements = {
   hardwareModeLabel: document.querySelector("#hardware-mode-label"),
   hardwareStatusCopy: document.querySelector("#hardware-status-copy"),
   lastUpdateCopy: document.querySelector("#last-update-copy"),
+  hardwarePacket: document.querySelector("#hardware-packet"),
   toggleHardware: document.querySelector("#toggle-hardware"),
   simulatePressure: document.querySelector("#simulate-pressure"),
   simulateIv: document.querySelector("#simulate-iv"),
@@ -83,6 +87,7 @@ function render() {
   renderSummary(state.summary);
   renderPrimaryDecision(state.nurseDecision, focusBed);
   renderPressureMap(focusBed);
+  renderNurseTasks(focusBed.nurseTasks);
   renderAiSummary(focusBed);
   renderPriorityList(state.priorityQueue, focusBed.id);
   renderBedMap(state.beds, focusBed.id);
@@ -133,10 +138,35 @@ function renderPressureMap(bed) {
   });
 }
 
+function renderNurseTasks(tasks) {
+  elements.nurseTasks.replaceChildren();
+  tasks.forEach((task, index) => {
+    const item = document.createElement("article");
+    item.innerHTML = `
+      <span>${index + 1}</span>
+      <div>
+        <strong>${task.label}</strong>
+        <small>${task.detail}</small>
+      </div>
+    `;
+    elements.nurseTasks.append(item);
+  });
+}
+
 function renderAiSummary(bed) {
   elements.rawSignalCopy.textContent = `Pressure ${bed.pressure.level} · IV ${bed.iv.level}`;
   elements.riskPatternCopy.textContent = `${bed.level} · Score ${bed.priorityScore}`;
   elements.responseCopy.textContent = bed.recommendedAction;
+  elements.aiBreakdown.replaceChildren();
+  bed.aiExplanation.forEach((item) => {
+    const row = document.createElement("article");
+    row.innerHTML = `
+      <span>${item.label}</span>
+      <strong>${item.value}</strong>
+      <small>${item.detail}</small>
+    `;
+    elements.aiBreakdown.append(row);
+  });
 }
 
 function renderPriorityList(queue, focusBedId) {
@@ -229,6 +259,7 @@ function renderHardwareStatus() {
         timeZone: "Asia/Kuala_Lumpur",
       }).format(hardwareStatus.lastUpdatedAt)}`
     : "No hardware packet received";
+  elements.hardwarePacket.textContent = JSON.stringify(latestHardwarePacket, null, 2);
 }
 
 function clamp(value, min = 0, max = 100) {
@@ -306,6 +337,8 @@ function calculateBedRisk(bed) {
     iv,
     priorityScore,
     level,
+    aiExplanation: buildAiExplanation(pressure, iv, priorityScore),
+    nurseTasks: buildNurseTasks(pressure, iv),
     explanation: buildExplanation(pressure, iv),
     recommendedAction: buildRecommendedAction(pressure, iv),
     alertAgeLabel: buildAlertAgeLabel(level, bed.pressure.highDurationSec),
@@ -376,6 +409,56 @@ function applyHardwareReading(sourceBeds, reading) {
   );
 }
 
+function buildDemoScenarioBeds(sourceBeds, scenario) {
+  return sourceBeds.map((sourceBed, index) => {
+    const bed = {
+      ...sourceBed,
+      pressure: { zones: [18, 24, 30, 26], highDurationSec: 0, lastMovementMin: 8 },
+      iv: { remainingMl: 220, flowMlPerMin: 6, abnormalFlow: false },
+      acknowledged: false,
+    };
+
+    if (scenario === "pressure-ulcer" && index === 0) {
+      return {
+        ...bed,
+        pressure: { zones: [18, 42, 88, 92], highDurationSec: 76, lastMovementMin: 38 },
+        iv: { remainingMl: 190, flowMlPerMin: 6, abnormalFlow: false },
+        acknowledged: false,
+      };
+    }
+
+    if (scenario === "iv-abnormal" && index === 2) {
+      return {
+        ...bed,
+        pressure: { zones: [30, 36, 41, 38], highDurationSec: 0, lastMovementMin: 12 },
+        iv: { remainingMl: 36, flowMlPerMin: 0, abnormalFlow: true },
+        acknowledged: false,
+      };
+    }
+
+    if (scenario === "multi-bed-rush") {
+      const rushCases = [
+        {
+          pressure: { zones: [20, 44, 86, 91], highDurationSec: 82, lastMovementMin: 40 },
+          iv: { remainingMl: 180, flowMlPerMin: 6, abnormalFlow: false },
+        },
+        {
+          pressure: { zones: [24, 36, 42, 39], highDurationSec: 0, lastMovementMin: 18 },
+          iv: { remainingMl: 32, flowMlPerMin: 0, abnormalFlow: true },
+        },
+        {
+          pressure: { zones: [48, 64, 78, 72], highDurationSec: 58, lastMovementMin: 32 },
+          iv: { remainingMl: 34, flowMlPerMin: 4, abnormalFlow: false },
+        },
+      ];
+      const rushCase = rushCases[index];
+      if (rushCase) return { ...bed, ...rushCase, acknowledged: false };
+    }
+
+    return bed;
+  });
+}
+
 function toNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
@@ -402,6 +485,79 @@ function buildExplanation(pressure, iv) {
   }
 
   return notes.length > 0 ? notes.join(" and ") : "All tracked bedside signals are stable";
+}
+
+function buildAiExplanation(pressure, iv, priorityScore) {
+  return [
+    {
+      label: "Pressure risk",
+      value: `${pressure.score}/100`,
+      detail: `${pressure.level} pressure in zone ${pressure.highestZone + 1}`,
+    },
+    {
+      label: "IV risk",
+      value: `${iv.score}/100`,
+      detail: iv.abnormalFlow
+        ? "abnormal flow pattern"
+        : iv.timeRemainingMin === null
+          ? "flow paused"
+          : `${iv.timeRemainingMin} min remaining`,
+    },
+    {
+      label: "Movement gap",
+      value: `${pressure.zones.length} zones`,
+      detail: `highest pressure ${pressure.maxPressure}, average ${pressure.averagePressure}`,
+    },
+    {
+      label: "AI priority",
+      value: `${priorityScore}/100`,
+      detail:
+        pressure.level === "High"
+          ? "sustained high pressure drives the first check"
+          : iv.level === "Urgent"
+            ? "IV abnormality drives the first check"
+            : "combined bedside signals determine queue order",
+    },
+  ];
+}
+
+function buildNurseTasks(pressure, iv) {
+  const tasks = [];
+
+  if (pressure.level === "High") {
+    tasks.push({
+      label: "Reposition patient",
+      detail: `Relieve pressure around zone ${pressure.highestZone + 1}`,
+    });
+    tasks.push({
+      label: "Inspect skin condition",
+      detail: "Check redness or discomfort before logging response",
+    });
+  } else if (pressure.level === "Medium") {
+    tasks.push({
+      label: "Check posture",
+      detail: `Review pressure trend around zone ${pressure.highestZone + 1}`,
+    });
+  }
+
+  if (iv.level === "Urgent") {
+    tasks.push({
+      label: "Inspect IV bag and line",
+      detail: iv.abnormalFlow ? "Flow pattern looks abnormal" : `${iv.remainingMl} ml remaining`,
+    });
+  } else if (iv.level === "Monitor") {
+    tasks.push({
+      label: "Prepare IV replacement",
+      detail: `${iv.timeRemainingMin} min estimated remaining`,
+    });
+  }
+
+  tasks.push({
+    label: "Acknowledge alert",
+    detail: "Confirm nurse has seen the bedside risk",
+  });
+
+  return tasks.slice(0, 4);
 }
 
 function buildRecommendedAction(pressure, iv) {
@@ -510,6 +666,21 @@ elements.priorityList.addEventListener("click", (event) => {
   selectBed(item.dataset.select);
 });
 
+document.querySelectorAll("[data-scenario]").forEach((button) => {
+  button.addEventListener("click", () => {
+    hardwareMode = false;
+    hardwareStatus = {
+      connected: false,
+      message: `Demo scenario loaded: ${button.textContent}`,
+      lastUpdatedAt: null,
+    };
+    latestHardwarePacket = { mode: "scenario", scenario: button.dataset.scenario };
+    beds = buildDemoScenarioBeds(initialBeds, button.dataset.scenario);
+    selectedBedId = buildDashboardState(beds).criticalBed.id;
+    render();
+  });
+});
+
 elements.toggleHardware.addEventListener("click", () => {
   hardwareMode = !hardwareMode;
   hardwareStatus = hardwareMode
@@ -523,6 +694,7 @@ elements.toggleHardware.addEventListener("click", () => {
         message: "Waiting in simulated mode",
         lastUpdatedAt: null,
       };
+  latestHardwarePacket = hardwareMode ? { mode: "hardware", endpoint: "/latest" } : { mode: "simulated" };
   render();
   if (hardwareMode) pollHardwareBridge();
 });
@@ -567,6 +739,7 @@ elements.simulateReset.addEventListener("click", () => {
     message: "Waiting in simulated mode",
     lastUpdatedAt: null,
   };
+  latestHardwarePacket = { mode: "simulated" };
   render();
 });
 
@@ -583,6 +756,7 @@ async function pollHardwareBridge() {
 
     beds = applyHardwareReading(beds, normalized);
     selectedBedId = normalized.bedId;
+    latestHardwarePacket = payload;
     hardwareStatus = {
       connected: payload.connected !== false,
       message: `${normalized.bedId}: pressure zones ${normalized.pressure.zones.join(", ")}; IV ${normalized.iv.remainingMl} ml`,
