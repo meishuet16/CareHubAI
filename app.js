@@ -30,17 +30,27 @@ const initialBeds = [
 ];
 
 let beds = structuredClone(initialBeds);
+let selectedBedId = "Bed 01";
 
 const elements = {
+  shiftTime: document.querySelector("#shift-time"),
+  totalCount: document.querySelector("#total-count"),
   urgentCount: document.querySelector("#urgent-count"),
   monitorCount: document.querySelector("#monitor-count"),
   stableCount: document.querySelector("#stable-count"),
+  ivWatchCount: document.querySelector("#iv-watch-count"),
+  avgPriority: document.querySelector("#avg-priority"),
   priorityList: document.querySelector("#priority-list"),
   bedGrid: document.querySelector("#bed-grid"),
+  eventLog: document.querySelector("#event-log"),
+  selectedTitle: document.querySelector("#selected-title"),
+  selectedStatus: document.querySelector("#selected-status"),
   pressureMap: document.querySelector("#pressure-map"),
   liveScore: document.querySelector("#live-score"),
   liveIv: document.querySelector("#live-iv"),
+  liveAge: document.querySelector("#live-age"),
   liveAction: document.querySelector("#live-action"),
+  liveExplanation: document.querySelector("#live-explanation"),
   simulatePressure: document.querySelector("#simulate-pressure"),
   simulateIv: document.querySelector("#simulate-iv"),
   simulateReset: document.querySelector("#simulate-reset"),
@@ -48,16 +58,136 @@ const elements = {
 
 function render() {
   const state = buildDashboardState(beds);
-  const liveBed = state.beds.find((bed) => bed.id === "Bed 01");
+  const selectedBed =
+    state.beds.find((bed) => bed.id === selectedBedId) || state.beds.find((bed) => bed.id);
 
-  elements.urgentCount.textContent = state.summary.urgent;
-  elements.monitorCount.textContent = state.summary.monitor;
-  elements.stableCount.textContent = state.summary.stable;
-
+  renderClock();
+  renderSummary(state.summary);
   renderPriorityQueue(state.priorityQueue);
-  renderPressureMap(liveBed);
-  renderLiveMetrics(liveBed);
+  renderSelectedBed(selectedBed);
   renderBeds(state.beds);
+  renderEventLog(state.eventLog);
+}
+
+function renderClock() {
+  elements.shiftTime.textContent = new Intl.DateTimeFormat("en-MY", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Kuala_Lumpur",
+  }).format(new Date());
+}
+
+function renderSummary(summary) {
+  elements.totalCount.textContent = summary.totalBeds;
+  elements.urgentCount.textContent = summary.urgent;
+  elements.monitorCount.textContent = summary.monitor;
+  elements.stableCount.textContent = summary.stable;
+  elements.ivWatchCount.textContent = summary.ivEndingSoon;
+  elements.avgPriority.textContent = summary.avgPriorityScore;
+}
+
+function renderPriorityQueue(queue) {
+  elements.priorityList.replaceChildren();
+
+  if (queue.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "No active priority alerts. Ward signals are stable.";
+    elements.priorityList.append(empty);
+    return;
+  }
+
+  queue.forEach((bed, index) => {
+    const card = document.createElement("article");
+    card.className = `priority-card ${bed.level.toLowerCase()}`;
+    card.innerHTML = `
+      <div class="priority-rank">Priority ${index + 1} · ${bed.alertAgeLabel}</div>
+      <strong>${bed.id} - ${bed.level}</strong>
+      <p>${bed.explanation}</p>
+      <p><b>Action:</b> ${bed.recommendedAction}</p>
+      <button type="button" data-select="${bed.id}">View Bed</button>
+      <button type="button" data-ack="${bed.id}">Acknowledge</button>
+    `;
+    elements.priorityList.append(card);
+  });
+}
+
+function renderSelectedBed(bed) {
+  elements.selectedTitle.textContent = `${bed.id} · ${bed.patient}`;
+  elements.selectedStatus.className = `pill ${bed.level.toLowerCase()}`;
+  elements.selectedStatus.textContent = bed.level;
+  elements.liveScore.textContent = `${bed.priorityScore} / 100`;
+  elements.liveIv.textContent =
+    bed.iv.timeRemainingMin === null ? "Flow paused" : `${bed.iv.timeRemainingMin} min`;
+  elements.liveAge.textContent = bed.alertAgeLabel;
+  elements.liveAction.textContent = bed.recommendedAction;
+  elements.liveExplanation.textContent = bed.explanation;
+  renderPressureMap(bed);
+}
+
+function renderPressureMap(bed) {
+  elements.pressureMap.replaceChildren();
+
+  bed.pressure.zones.forEach((value, index) => {
+    const zone = document.createElement("div");
+    zone.className = `pressure-zone ${getZoneClass(value)}`;
+    zone.innerHTML = `
+      <span>Zone ${index + 1}</span>
+      <strong>${value}</strong>
+    `;
+    elements.pressureMap.append(zone);
+  });
+}
+
+function renderBeds(enrichedBeds) {
+  elements.bedGrid.replaceChildren();
+
+  enrichedBeds.forEach((bed) => {
+    const card = document.createElement("article");
+    card.className = `bed-card ${bed.id === selectedBedId ? "selected" : ""}`;
+    card.dataset.select = bed.id;
+    card.innerHTML = `
+      <header>
+        <div>
+          <h3>${bed.id}</h3>
+          <div class="patient-name">${bed.patient}</div>
+        </div>
+        <span class="pill ${bed.level.toLowerCase()}">${bed.level}</span>
+      </header>
+      <p>${bed.explanation}</p>
+      <div class="bed-metrics">
+        <div><span>Pressure</span><strong>${bed.pressure.level}</strong></div>
+        <div><span>IV</span><strong>${bed.iv.level}</strong></div>
+        <div><span>Alert Age</span><strong>${bed.alertAgeLabel}</strong></div>
+        <div><span>Priority</span><strong>${bed.priorityScore}/100</strong></div>
+      </div>
+    `;
+    elements.bedGrid.append(card);
+  });
+}
+
+function renderEventLog(events) {
+  elements.eventLog.replaceChildren();
+
+  if (events.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "No unresolved bedside risk events.";
+    elements.eventLog.append(empty);
+    return;
+  }
+
+  events.forEach((event, index) => {
+    const item = document.createElement("article");
+    item.className = `event-item ${event.level.toLowerCase()}`;
+    item.innerHTML = `
+      <strong>${String(index + 1).padStart(2, "0")} · ${event.level}</strong>
+      <p>${event.message}</p>
+      <p><b>Next:</b> ${event.action}</p>
+    `;
+    elements.eventLog.append(item);
+  });
 }
 
 function clamp(value, min = 0, max = 100) {
@@ -127,15 +257,17 @@ function calculateBedRisk(bed) {
         : priorityScore >= 40
           ? "Monitor"
           : "Stable";
+  const level = bed.acknowledged && baseLevel !== "Stable" ? "Acknowledged" : baseLevel;
 
   return {
     ...bed,
     pressure,
     iv,
     priorityScore,
-    level: bed.acknowledged && baseLevel !== "Stable" ? "Acknowledged" : baseLevel,
+    level,
     explanation: buildExplanation(pressure, iv),
     recommendedAction: buildRecommendedAction(pressure, iv),
+    alertAgeLabel: buildAlertAgeLabel(level, bed.pressure.highDurationSec),
   };
 }
 
@@ -153,18 +285,25 @@ function buildDashboardState(sourceBeds) {
       monitor: enrichedBeds.filter((bed) => bed.level === "Monitor").length,
       stable: enrichedBeds.filter((bed) => bed.level === "Stable").length,
       acknowledged: enrichedBeds.filter((bed) => bed.level === "Acknowledged").length,
+      totalBeds: enrichedBeds.length,
+      activeBeds: enrichedBeds.filter((bed) => bed.level !== "Stable").length,
+      ivEndingSoon: enrichedBeds.filter((bed) => bed.iv.level !== "Normal").length,
+      avgPriorityScore: round(
+        enrichedBeds.reduce((total, bed) => total + bed.priorityScore, 0) / enrichedBeds.length,
+      ),
     },
+    eventLog: buildEventLog(enrichedBeds),
   };
+}
+
+function acknowledgeAlert(sourceBeds, bedId) {
+  return sourceBeds.map((bed) => (bed.id === bedId ? { ...bed, acknowledged: true } : bed));
 }
 
 function comparePriority(first, second) {
   const severity = { Urgent: 3, Monitor: 2, Stable: 1, Acknowledged: 0 };
   const severityDifference = severity[second.level] - severity[first.level];
   return severityDifference || second.priorityScore - first.priorityScore;
-}
-
-function acknowledgeAlert(sourceBeds, bedId) {
-  return sourceBeds.map((bed) => (bed.id === bedId ? { ...bed, acknowledged: true } : bed));
 }
 
 function buildExplanation(pressure, iv) {
@@ -194,74 +333,22 @@ function buildRecommendedAction(pressure, iv) {
   return actions.length > 0 ? actions.join(" and ") : "No immediate action needed";
 }
 
-function renderPriorityQueue(queue) {
-  elements.priorityList.replaceChildren();
-
-  if (queue.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "empty-state";
-    empty.textContent = "No active priority alerts. Ward signals are stable.";
-    elements.priorityList.append(empty);
-    return;
-  }
-
-  queue.forEach((bed, index) => {
-    const card = document.createElement("article");
-    card.className = `priority-card ${bed.level.toLowerCase()}`;
-    card.innerHTML = `
-      <div class="priority-rank">Priority ${index + 1}</div>
-      <strong>${bed.id} - ${bed.level}</strong>
-      <p>${bed.explanation}</p>
-      <button type="button" data-ack="${bed.id}">Acknowledge</button>
-    `;
-    elements.priorityList.append(card);
-  });
+function buildAlertAgeLabel(level, highDurationSec) {
+  if (level === "Stable") return "No active alert";
+  if (highDurationSec > 0) return `${highDurationSec} sec`;
+  return "New alert";
 }
 
-function renderPressureMap(bed) {
-  elements.pressureMap.replaceChildren();
-
-  bed.pressure.zones.forEach((value, index) => {
-    const zone = document.createElement("div");
-    zone.className = `pressure-zone ${getZoneClass(value)}`;
-    zone.innerHTML = `
-      <span>Zone ${index + 1}</span>
-      <strong>${value}</strong>
-    `;
-    elements.pressureMap.append(zone);
-  });
-}
-
-function renderLiveMetrics(bed) {
-  elements.liveScore.textContent = `${bed.priorityScore} / 100`;
-  elements.liveIv.textContent =
-    bed.iv.timeRemainingMin === null ? "Flow paused" : `${bed.iv.timeRemainingMin} min`;
-  elements.liveAction.textContent = bed.recommendedAction;
-}
-
-function renderBeds(enrichedBeds) {
-  elements.bedGrid.replaceChildren();
-
-  enrichedBeds.forEach((bed) => {
-    const card = document.createElement("article");
-    card.className = "bed-card";
-    card.innerHTML = `
-      <header>
-        <div>
-          <h3>${bed.id}</h3>
-          <div class="patient-name">${bed.patient}</div>
-        </div>
-        <span class="pill ${bed.level.toLowerCase()}">${bed.level}</span>
-      </header>
-      <p>${bed.explanation}</p>
-      <div class="bed-metrics">
-        <div><span>Pressure</span><strong>${bed.pressure.level}</strong></div>
-        <div><span>IV</span><strong>${bed.iv.level}</strong></div>
-        <div><span>Priority</span><strong>${bed.priorityScore}/100</strong></div>
-      </div>
-    `;
-    elements.bedGrid.append(card);
-  });
+function buildEventLog(enrichedBeds) {
+  return enrichedBeds
+    .filter((bed) => bed.level === "Urgent" || bed.level === "Monitor")
+    .sort(comparePriority)
+    .map((bed) => ({
+      bedId: bed.id,
+      level: bed.level,
+      message: `${bed.id}: ${bed.explanation}`,
+      action: bed.recommendedAction,
+    }));
 }
 
 function getZoneClass(value) {
@@ -270,16 +357,36 @@ function getZoneClass(value) {
   return "zone-low";
 }
 
-elements.priorityList.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-ack]");
-  if (!button) return;
-  beds = acknowledgeAlert(beds, button.dataset.ack);
+function selectBed(bedId) {
+  selectedBedId = bedId;
   render();
+}
+
+elements.priorityList.addEventListener("click", (event) => {
+  const selectButton = event.target.closest("[data-select]");
+  const ackButton = event.target.closest("[data-ack]");
+
+  if (selectButton) {
+    selectBed(selectButton.dataset.select);
+    return;
+  }
+
+  if (ackButton) {
+    beds = acknowledgeAlert(beds, ackButton.dataset.ack);
+    selectedBedId = ackButton.dataset.ack;
+    render();
+  }
+});
+
+elements.bedGrid.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-select]");
+  if (!card) return;
+  selectBed(card.dataset.select);
 });
 
 elements.simulatePressure.addEventListener("click", () => {
   beds = beds.map((bed) =>
-    bed.id === "Bed 01"
+    bed.id === selectedBedId
       ? {
           ...bed,
           pressure: { zones: [24, 38, 86, 91], highDurationSec: 78, lastMovementMin: 39 },
@@ -292,7 +399,7 @@ elements.simulatePressure.addEventListener("click", () => {
 
 elements.simulateIv.addEventListener("click", () => {
   beds = beds.map((bed) =>
-    bed.id === "Bed 01"
+    bed.id === selectedBedId
       ? {
           ...bed,
           iv: { remainingMl: 42, flowMlPerMin: 6, abnormalFlow: false },
@@ -305,6 +412,7 @@ elements.simulateIv.addEventListener("click", () => {
 
 elements.simulateReset.addEventListener("click", () => {
   beds = structuredClone(initialBeds);
+  selectedBedId = "Bed 01";
   render();
 });
 
