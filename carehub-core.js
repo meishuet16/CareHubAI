@@ -98,6 +98,9 @@ export function buildDashboardState(beds) {
   return {
     beds: enrichedBeds,
     priorityQueue,
+    criticalBed: priorityQueue[0] || enrichedBeds[0],
+    nextAction: buildNextAction(priorityQueue[0]),
+    nurseDecision: buildNurseDecision(priorityQueue),
     summary: {
       urgent: enrichedBeds.filter((bed) => bed.level === "Urgent").length,
       monitor: enrichedBeds.filter((bed) => bed.level === "Monitor").length,
@@ -111,6 +114,8 @@ export function buildDashboardState(beds) {
       ),
     },
     eventLog: buildEventLog(enrichedBeds),
+    sensorPipeline: buildSensorPipeline(),
+    prototypeFlow: buildPrototypeFlow(),
   };
 }
 
@@ -167,4 +172,59 @@ function buildEventLog(beds) {
       message: `${bed.id}: ${bed.explanation}`,
       action: bed.recommendedAction,
     }));
+}
+
+function buildNextAction(criticalBed) {
+  if (!criticalBed) {
+    return {
+      title: "All beds stable",
+      reason: "No active pressure or IV alerts require immediate nurse action.",
+      action: "Continue routine monitoring",
+    };
+  }
+
+  return {
+    title: `${criticalBed.id} needs attention`,
+    reason: criticalBed.explanation,
+    action: criticalBed.recommendedAction,
+  };
+}
+
+function buildSensorPipeline() {
+  return [
+    { label: "Pressure Mat", status: "Live", detail: "4-zone pressure input" },
+    { label: "IV Sensor", status: "Live", detail: "Fluid trend signal" },
+    { label: "ESP32 Edge", status: "Online", detail: "Bedside data relay" },
+    { label: "AI Triage", status: "Ready", detail: "Priority scoring" },
+  ];
+}
+
+function buildNurseDecision(priorityQueue) {
+  const primary = priorityQueue[0];
+  if (!primary) {
+    return {
+      primaryBedId: null,
+      headline: "No urgent bedside checks",
+      why: "All monitored pressure and IV signals are stable.",
+      action: "Continue routine ward monitoring",
+      queue: [],
+    };
+  }
+
+  return {
+    primaryBedId: primary.id,
+    headline: `Check ${primary.id} first`,
+    why: primary.explanation,
+    action: primary.recommendedAction,
+    queue: priorityQueue.slice(1),
+  };
+}
+
+function buildPrototypeFlow() {
+  return [
+    { label: "Pressure mat", detail: "Detect sustained pressure zones" },
+    { label: "IV sensor", detail: "Track fluid trend or abnormal flow" },
+    { label: "AI triage", detail: "Rank bedside risks by urgency" },
+    { label: "Nurse action", detail: "Check the highest-priority bed first" },
+  ];
 }
