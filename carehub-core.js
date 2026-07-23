@@ -129,6 +129,46 @@ export function acknowledgeAlert(beds, bedId) {
   return beds.map((bed) => (bed.id === bedId ? { ...bed, acknowledged: true } : bed));
 }
 
+export function normalizeHardwareReading(reading) {
+  if (!reading || !reading.pressure || !reading.iv) return null;
+  if (!Array.isArray(reading.pressure.zones) || reading.pressure.zones.length !== 4) return null;
+
+  return {
+    bedId: String(reading.bedId || "Bed 01"),
+    pressure: {
+      zones: reading.pressure.zones.map((value) => round(clamp(toNumber(value), 0, 100))),
+      highDurationSec: round(clamp(toNumber(reading.pressure.highDurationSec), 0, 3600)),
+      lastMovementMin: round(clamp(toNumber(reading.pressure.lastMovementMin), 0, 240)),
+    },
+    iv: {
+      remainingMl: round(clamp(toNumber(reading.iv.remainingMl), 0, 1000)),
+      flowMlPerMin: round(clamp(toNumber(reading.iv.flowMlPerMin), 0, 100)),
+      abnormalFlow: reading.iv.abnormalFlow === true || reading.iv.abnormalFlow === "yes",
+    },
+  };
+}
+
+export function applyHardwareReading(beds, reading) {
+  const normalized = normalizeHardwareReading(reading);
+  if (!normalized) return beds;
+
+  return beds.map((bed) =>
+    bed.id === normalized.bedId
+      ? {
+          ...bed,
+          pressure: normalized.pressure,
+          iv: normalized.iv,
+          acknowledged: false,
+        }
+      : bed,
+  );
+}
+
+function toNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
 function buildExplanation(pressure, iv) {
   const notes = [];
   if (pressure.level === "High") {
