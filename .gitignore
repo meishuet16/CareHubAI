@@ -1,0 +1,6 @@
+*.pdf
+official-handbook.txt
+terms-conditions.txt
+node_modules/
+.DS_Store
+Thumbs.db

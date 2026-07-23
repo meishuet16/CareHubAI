@@ -1,0 +1,10 @@
+{
+  "name": "carehub-ai-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/carehub-core.test.mjs",
+    "check": "node --check app.js && node --check carehub-core.js"
+  }
+}
