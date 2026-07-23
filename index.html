@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareHub AI Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="dashboard-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">CareHub AI</p>
+          <h1>Smart Bedside Nursing Assistant</h1>
+        </div>
+        <div class="status-strip" aria-label="Ward summary">
+          <div>
+            <span id="urgent-count">0</span>
+            <small>Urgent</small>
+          </div>
+          <div>
+            <span id="monitor-count">0</span>
+            <small>Monitor</small>
+          </div>
+          <div>
+            <span id="stable-count">0</span>
+            <small>Stable</small>
+          </div>
+        </div>
+      </header>
+
+      <section class="control-row" aria-label="Prototype controls">
+        <button id="simulate-pressure" type="button">Simulate Pressure Risk</button>
+        <button id="simulate-iv" type="button">Simulate IV Ending Soon</button>
+        <button id="simulate-reset" type="button">Reset Demo</button>
+      </section>
+
+      <section class="main-grid">
+        <aside class="priority-panel" aria-labelledby="priority-title">
+          <div class="section-heading">
+            <p class="eyebrow">Nurse Station</p>
+            <h2 id="priority-title">Priority Queue</h2>
+          </div>
+          <div id="priority-list" class="priority-list"></div>
+        </aside>
+
+        <section class="live-panel" aria-labelledby="live-title">
+          <div class="section-heading">
+            <p class="eyebrow">Prototype Bed</p>
+            <h2 id="live-title">Bed 01 Live Data</h2>
+          </div>
+          <div class="live-layout">
+            <div>
+              <h3>Pressure Map</h3>
+              <div id="pressure-map" class="pressure-map" aria-label="Pressure zones"></div>
+            </div>
+            <div class="metric-stack">
+              <div class="metric">
+                <span>Priority Score</span>
+                <strong id="live-score">0</strong>
+              </div>
+              <div class="metric">
+                <span>IV Remaining</span>
+                <strong id="live-iv">--</strong>
+              </div>
+              <div class="metric">
+                <span>Recommended Action</span>
+                <strong id="live-action">No immediate action needed</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="beds-section" aria-labelledby="beds-title">
+        <div class="section-heading">
+          <p class="eyebrow">Multi-Bed Simulation</p>
+          <h2 id="beds-title">Ward Overview</h2>
+        </div>
+        <div id="bed-grid" class="bed-grid"></div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
