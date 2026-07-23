@@ -102,5 +102,15 @@ assert.equal(dashboard.eventLog.length, 2);
 assert.match(dashboard.eventLog[0].message, /Bed 01/);
 assert.equal(dashboard.beds[0].alertAgeLabel, "72 sec");
 assert.equal(dashboard.beds[1].alertAgeLabel, "No active alert");
+assert.equal(dashboard.criticalBed.id, "Bed 01");
+assert.match(dashboard.nextAction.title, /Bed 01/);
+assert.match(dashboard.nextAction.reason, /pressure/i);
+assert.equal(dashboard.sensorPipeline.length, 4);
+assert.equal(dashboard.sensorPipeline[0].label, "Pressure Mat");
+assert.equal(dashboard.nurseDecision.primaryBedId, "Bed 01");
+assert.equal(dashboard.nurseDecision.queue.length, 1);
+assert.match(dashboard.nurseDecision.headline, /Check Bed 01 first/);
+assert.match(dashboard.nurseDecision.why, /pressure/i);
+assert.equal(dashboard.prototypeFlow.at(-1).label, "Nurse action");
 
 console.log("carehub-core tests passed");
