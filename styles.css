@@ -590,9 +590,7 @@ h3 {
 }
 
 .bed-map {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(150px, 1fr));
-  gap: 10px;
+  min-height: 280px;
 }
 
 .bed-tile,
