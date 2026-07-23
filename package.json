@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "bridge:mock": "node bridge/mock-bridge.js",
     "test": "node tests/carehub-core.test.mjs",
-    "check": "node --check app.js && node --check carehub-core.js"
+    "check": "node --check app.js && node --check carehub-core.js && node --check bridge/mock-bridge.js"
   }
 }
