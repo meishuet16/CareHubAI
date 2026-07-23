@@ -95,4 +95,12 @@ assert.equal(bed01.acknowledged, true);
 assert.equal(bed01.level, "Acknowledged");
 assert.equal(acknowledgedDashboard.priorityQueue[0].id, "Bed 03");
 
+assert.equal(dashboard.summary.totalBeds, 3);
+assert.equal(dashboard.summary.ivEndingSoon, 2);
+assert.equal(dashboard.summary.avgPriorityScore > 40, true);
+assert.equal(dashboard.eventLog.length, 2);
+assert.match(dashboard.eventLog[0].message, /Bed 01/);
+assert.equal(dashboard.beds[0].alertAgeLabel, "72 sec");
+assert.equal(dashboard.beds[1].alertAgeLabel, "No active alert");
+
 console.log("carehub-core tests passed");
