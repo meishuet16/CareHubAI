@@ -15,10 +15,18 @@
           <p class="subtitle">
             Pressure mat and IV signals are converted into one prioritized nurse action list.
           </p>
+          <div class="ward-context">
+            <span>Ward A</span>
+            <span>4 monitored beds</span>
+            <span>Human-in-the-loop alerts</span>
+          </div>
         </div>
         <div class="demo-controls">
           <span id="hardware-mode-label" class="mode-pill simulated">Simulated Mode</span>
           <button id="toggle-hardware" type="button">Use Hardware</button>
+          <button data-scenario="pressure-ulcer" type="button">Pressure Risk</button>
+          <button data-scenario="iv-abnormal" type="button">IV Abnormal</button>
+          <button data-scenario="multi-bed-rush" type="button">Multi-Bed Rush</button>
           <button id="simulate-pressure" type="button">Simulate Pressure</button>
           <button id="simulate-iv" type="button">Simulate IV</button>
           <button id="acknowledge-selected" type="button">Acknowledge</button>
