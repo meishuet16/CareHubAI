@@ -83,6 +83,8 @@ export function calculateBedRisk(bed) {
     iv,
     priorityScore,
     level,
+    aiExplanation: buildAiExplanation(pressure, iv, priorityScore),
+    nurseTasks: buildNurseTasks(pressure, iv),
     explanation,
     recommendedAction,
     alertAgeLabel: buildAlertAgeLabel(level, bed.pressure.highDurationSec),
