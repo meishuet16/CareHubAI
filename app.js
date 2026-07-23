@@ -31,6 +31,12 @@ const initialBeds = [
 
 let beds = structuredClone(initialBeds);
 let selectedBedId = "Bed 02";
+let hardwareMode = false;
+let hardwareStatus = {
+  connected: false,
+  message: "Waiting in simulated mode",
+  lastUpdatedAt: null,
+};
 
 const elements = {
   shiftTime: document.querySelector("#shift-time"),
@@ -56,6 +62,10 @@ const elements = {
   bedMap: document.querySelector("#bed-map"),
   prototypeFlow: document.querySelector("#prototype-flow"),
   eventLog: document.querySelector("#event-log"),
+  hardwareModeLabel: document.querySelector("#hardware-mode-label"),
+  hardwareStatusCopy: document.querySelector("#hardware-status-copy"),
+  lastUpdateCopy: document.querySelector("#last-update-copy"),
+  toggleHardware: document.querySelector("#toggle-hardware"),
   simulatePressure: document.querySelector("#simulate-pressure"),
   simulateIv: document.querySelector("#simulate-iv"),
   acknowledgeSelected: document.querySelector("#acknowledge-selected"),
@@ -78,6 +88,7 @@ function render() {
   renderBedMap(state.beds, focusBed.id);
   renderPrototypeFlow(state.prototypeFlow);
   renderEventLog(state.eventLog);
+  renderHardwareStatus();
 }
 
 function renderClock() {
@@ -198,6 +209,28 @@ function renderEventLog(events) {
   });
 }
 
+function renderHardwareStatus() {
+  elements.hardwareModeLabel.className = `mode-pill ${
+    hardwareMode ? (hardwareStatus.connected ? "live" : "offline") : "simulated"
+  }`;
+  elements.hardwareModeLabel.textContent = hardwareMode
+    ? hardwareStatus.connected
+      ? "Hardware Live"
+      : "Hardware Offline"
+    : "Simulated Mode";
+  elements.toggleHardware.textContent = hardwareMode ? "Use Simulation" : "Use Hardware";
+  elements.hardwareStatusCopy.textContent = hardwareStatus.message;
+  elements.lastUpdateCopy.textContent = hardwareStatus.lastUpdatedAt
+    ? `Last packet ${new Intl.DateTimeFormat("en-MY", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Kuala_Lumpur",
+      }).format(hardwareStatus.lastUpdatedAt)}`
+    : "No hardware packet received";
+}
+
 function clamp(value, min = 0, max = 100) {
   return Math.min(max, Math.max(min, value));
 }
@@ -311,6 +344,41 @@ function buildDashboardState(sourceBeds) {
 
 function acknowledgeAlert(sourceBeds, bedId) {
   return sourceBeds.map((bed) => (bed.id === bedId ? { ...bed, acknowledged: true } : bed));
+}
+
+function normalizeHardwareReading(reading) {
+  if (!reading || !reading.pressure || !reading.iv) return null;
+  if (!Array.isArray(reading.pressure.zones) || reading.pressure.zones.length !== 4) return null;
+
+  return {
+    bedId: String(reading.bedId || "Bed 01"),
+    pressure: {
+      zones: reading.pressure.zones.map((value) => round(clamp(toNumber(value), 0, 100))),
+      highDurationSec: round(clamp(toNumber(reading.pressure.highDurationSec), 0, 3600)),
+      lastMovementMin: round(clamp(toNumber(reading.pressure.lastMovementMin), 0, 240)),
+    },
+    iv: {
+      remainingMl: round(clamp(toNumber(reading.iv.remainingMl), 0, 1000)),
+      flowMlPerMin: round(clamp(toNumber(reading.iv.flowMlPerMin), 0, 100)),
+      abnormalFlow: reading.iv.abnormalFlow === true || reading.iv.abnormalFlow === "yes",
+    },
+  };
+}
+
+function applyHardwareReading(sourceBeds, reading) {
+  const normalized = normalizeHardwareReading(reading);
+  if (!normalized) return sourceBeds;
+
+  return sourceBeds.map((bed) =>
+    bed.id === normalized.bedId
+      ? { ...bed, pressure: normalized.pressure, iv: normalized.iv, acknowledged: false }
+      : bed,
+  );
+}
+
+function toNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
 }
 
 function comparePriority(first, second) {
@@ -442,6 +510,23 @@ elements.priorityList.addEventListener("click", (event) => {
   selectBed(item.dataset.select);
 });
 
+elements.toggleHardware.addEventListener("click", () => {
+  hardwareMode = !hardwareMode;
+  hardwareStatus = hardwareMode
+    ? {
+        connected: false,
+        message: "Looking for bridge at localhost:3001/latest",
+        lastUpdatedAt: null,
+      }
+    : {
+        connected: false,
+        message: "Waiting in simulated mode",
+        lastUpdatedAt: null,
+      };
+  render();
+  if (hardwareMode) pollHardwareBridge();
+});
+
 elements.simulatePressure.addEventListener("click", () => {
   beds = beds.map((bed) =>
     bed.id === selectedBedId
@@ -476,7 +561,46 @@ elements.acknowledgeSelected.addEventListener("click", () => {
 elements.simulateReset.addEventListener("click", () => {
   beds = structuredClone(initialBeds);
   selectedBedId = "Bed 02";
+  hardwareMode = false;
+  hardwareStatus = {
+    connected: false,
+    message: "Waiting in simulated mode",
+    lastUpdatedAt: null,
+  };
   render();
 });
+
+async function pollHardwareBridge() {
+  if (!hardwareMode) return;
+
+  try {
+    const response = await fetch("http://localhost:3001/latest", { cache: "no-store" });
+    if (!response.ok) throw new Error(`Bridge returned ${response.status}`);
+    const payload = await response.json();
+    const reading = payload.reading || payload;
+    const normalized = normalizeHardwareReading(reading);
+    if (!normalized) throw new Error("Bridge packet did not match CareHub protocol");
+
+    beds = applyHardwareReading(beds, normalized);
+    selectedBedId = normalized.bedId;
+    hardwareStatus = {
+      connected: payload.connected !== false,
+      message: `${normalized.bedId}: pressure zones ${normalized.pressure.zones.join(", ")}; IV ${normalized.iv.remainingMl} ml`,
+      lastUpdatedAt: new Date(payload.receivedAt || Date.now()),
+    };
+  } catch (error) {
+    hardwareStatus = {
+      connected: false,
+      message: error.message || "Hardware bridge unavailable",
+      lastUpdatedAt: hardwareStatus.lastUpdatedAt,
+    };
+  }
+
+  render();
+}
+
+setInterval(() => {
+  if (hardwareMode) pollHardwareBridge();
+}, 1000);
 
 render();
