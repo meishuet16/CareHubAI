@@ -3,161 +3,158 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareHub AI Command Center</title>
+    <title>CareHub AI Dashboard</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <aside class="sidebar" aria-label="CareHub navigation">
-        <div class="brand-block">
-          <div class="brand-mark">CH</div>
-          <div>
-            <p>CareHub AI</p>
-            <strong>Ward Command</strong>
-          </div>
+    <main class="dashboard">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">CareHub AI · Smart Bedside Nursing Assistant</p>
+          <h1>Next Patient To Check</h1>
+          <p class="subtitle">
+            Pressure mat and IV signals are converted into one prioritized nurse action list.
+          </p>
         </div>
+        <div class="demo-controls">
+          <button id="simulate-pressure" type="button">Simulate Pressure</button>
+          <button id="simulate-iv" type="button">Simulate IV</button>
+          <button id="acknowledge-selected" type="button">Acknowledge</button>
+          <button id="simulate-reset" type="button">Reset</button>
+        </div>
+      </header>
 
-        <section class="sidebar-section">
-          <span class="sidebar-label">Shift</span>
-          <strong id="shift-time">20:45 MYT</strong>
-          <small>Demo Mode · Elderly Care Ward</small>
-        </section>
+      <section class="summary-row" aria-label="Ward summary">
+        <article>
+          <span>Beds</span>
+          <strong id="total-count">0</strong>
+        </article>
+        <article class="urgent">
+          <span>Urgent</span>
+          <strong id="urgent-count">0</strong>
+        </article>
+        <article class="monitor">
+          <span>Monitor</span>
+          <strong id="monitor-count">0</strong>
+        </article>
+        <article class="stable">
+          <span>Stable</span>
+          <strong id="stable-count">0</strong>
+        </article>
+        <article>
+          <span>IV Watch</span>
+          <strong id="iv-watch-count">0</strong>
+        </article>
+        <article>
+          <span>Avg Score</span>
+          <strong id="avg-priority">0</strong>
+        </article>
+      </section>
 
-        <section class="sidebar-section">
-          <span class="sidebar-label">System Health</span>
-          <div class="health-row"><span></span> ESP32 Link Online</div>
-          <div class="health-row"><span></span> Sensor Stream Stable</div>
-          <div class="health-row"><span></span> AI Risk Engine Ready</div>
-        </section>
-
-        <section class="sidebar-section">
-          <span class="sidebar-label">Prototype Scope</span>
-          <small>Pressure risk + IV monitoring + alert prioritization.</small>
-        </section>
-      </aside>
-
-      <section class="workspace">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Nurse Station Dashboard</p>
-            <h1>Smart Bedside Nursing Assistant</h1>
-            <p class="topbar-copy">
-              Prioritized bedside alerts for pressure-ulcer prevention and IV monitoring.
-            </p>
+      <section class="focus-grid">
+        <section class="primary-card">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Priority 1</p>
+              <h2 id="decision-headline">Check Bed 02 first</h2>
+            </div>
+            <span id="critical-status" class="status-pill urgent">Urgent</span>
           </div>
-          <div class="topbar-actions">
-            <button id="simulate-pressure" type="button">Pressure Risk</button>
-            <button id="simulate-iv" type="button">IV Ending Soon</button>
-            <button id="simulate-reset" type="button">Reset</button>
-          </div>
-        </header>
 
-        <section class="metric-grid" aria-label="Ward summary">
-          <article class="metric-card">
-            <span>Total Beds</span>
-            <strong id="total-count">0</strong>
-            <small>Under CareHub monitoring</small>
-          </article>
-          <article class="metric-card urgent">
-            <span>Urgent</span>
-            <strong id="urgent-count">0</strong>
-            <small>Needs priority response</small>
-          </article>
-          <article class="metric-card monitor">
-            <span>Monitor</span>
-            <strong id="monitor-count">0</strong>
-            <small>Watch during next round</small>
-          </article>
-          <article class="metric-card stable">
-            <span>Stable</span>
-            <strong id="stable-count">0</strong>
-            <small>No immediate action</small>
-          </article>
-          <article class="metric-card">
-            <span>IV Watch</span>
-            <strong id="iv-watch-count">0</strong>
-            <small>Ending soon or abnormal</small>
-          </article>
-          <article class="metric-card">
-            <span>Avg Priority</span>
-            <strong id="avg-priority">0</strong>
-            <small>AI triage score</small>
-          </article>
+          <div class="patient-action">
+            <span id="critical-title">Bed 02</span>
+            <strong id="critical-action">Reposition patient</strong>
+            <p id="critical-reason">pressure is high in zone 4</p>
+          </div>
+
+          <div class="patient-data">
+            <div>
+              <h3>Pressure Mat</h3>
+              <div id="pressure-map" class="pressure-map"></div>
+            </div>
+            <div class="readings">
+              <article>
+                <span>AI Priority</span>
+                <strong id="live-score">0 / 100</strong>
+              </article>
+              <article>
+                <span>IV Remaining</span>
+                <strong id="live-iv">--</strong>
+              </article>
+              <article>
+                <span>Alert Age</span>
+                <strong id="live-age">--</strong>
+              </article>
+            </div>
+          </div>
         </section>
 
-        <section class="command-grid">
-          <section class="panel worklist-panel">
-            <div class="panel-heading">
+        <aside class="side-stack">
+          <section class="panel">
+            <div class="card-heading">
               <div>
-                <p class="eyebrow">AI Prioritization</p>
-                <h2>Priority Worklist</h2>
+                <p class="eyebrow">AI Care Summary</p>
+                <h2>Why this patient?</h2>
               </div>
-              <span class="panel-chip">Live</span>
+            </div>
+            <div class="reason-list">
+              <article>
+                <span>Raw signals</span>
+                <strong id="raw-signal-copy">Pressure High · IV Normal</strong>
+              </article>
+              <article>
+                <span>Risk pattern</span>
+                <strong id="risk-pattern-copy">Urgent · Score 50</strong>
+              </article>
+              <article>
+                <span>Nurse action</span>
+                <strong id="response-copy">Reposition patient</strong>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="card-heading">
+              <div>
+                <p class="eyebrow">Next In Queue</p>
+                <h2>Other Beds</h2>
+              </div>
+              <span id="shift-time" class="time-pill">--:--</span>
             </div>
             <div id="priority-list" class="priority-list"></div>
           </section>
+        </aside>
+      </section>
 
-          <section class="panel selected-panel">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Selected Bed</p>
-                <h2 id="selected-title">Bed 01</h2>
-              </div>
-              <span id="selected-status" class="pill stable">Stable</span>
+      <section class="lower-grid">
+        <section class="panel">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Ward Map</p>
+              <h2>Four-Bed Demo</h2>
             </div>
-
-            <div class="selected-grid">
-              <div>
-                <h3>Pressure Map</h3>
-                <div id="pressure-map" class="pressure-map" aria-label="Pressure zones"></div>
-              </div>
-              <div class="detail-stack">
-                <div class="detail-card">
-                  <span>AI Priority Score</span>
-                  <strong id="live-score">0 / 100</strong>
-                </div>
-                <div class="detail-card">
-                  <span>IV Remaining</span>
-                  <strong id="live-iv">--</strong>
-                </div>
-                <div class="detail-card">
-                  <span>Alert Age</span>
-                  <strong id="live-age">No active alert</strong>
-                </div>
-                <div class="detail-card action-card">
-                  <span>Recommended Action</span>
-                  <strong id="live-action">No immediate action needed</strong>
-                </div>
-              </div>
-            </div>
-
-            <div class="ai-explanation">
-              <span>AI Explanation</span>
-              <p id="live-explanation">All tracked bedside signals are stable.</p>
-            </div>
-          </section>
+          </div>
+          <div id="bed-map" class="bed-map"></div>
         </section>
 
-        <section class="lower-grid">
-          <section class="panel">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Ward Overview</p>
-                <h2>Bed Status Board</h2>
-              </div>
+        <section class="panel">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Prototype Flow</p>
+              <h2>From Sensor To Nurse Action</h2>
             </div>
-            <div id="bed-grid" class="bed-grid"></div>
-          </section>
+          </div>
+          <div id="prototype-flow" class="prototype-flow"></div>
+        </section>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Audit Trail</p>
-                <h2>Event Log</h2>
-              </div>
+        <section class="panel">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Event Log</p>
+              <h2>Unresolved Alerts</h2>
             </div>
-            <div id="event-log" class="event-log"></div>
-          </section>
+          </div>
+          <div id="event-log" class="event-log"></div>
         </section>
       </section>
     </main>
