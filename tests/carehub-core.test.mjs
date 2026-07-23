@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   applyHardwareReading,
   buildDashboardState,
+  buildDemoScenarioBeds,
   calculateBedRisk,
   acknowledgeAlert,
   normalizeHardwareReading,
@@ -114,6 +115,12 @@ assert.equal(dashboard.nurseDecision.queue.length, 1);
 assert.match(dashboard.nurseDecision.headline, /Check Bed 01 first/);
 assert.match(dashboard.nurseDecision.why, /pressure/i);
 assert.equal(dashboard.prototypeFlow.at(-1).label, "Nurse action");
+assert.equal(dashboard.criticalBed.aiExplanation.length, 4);
+assert.equal(dashboard.criticalBed.aiExplanation[0].label, "Pressure risk");
+assert.match(dashboard.criticalBed.aiExplanation.at(-1).detail, /sustained high pressure/i);
+assert.equal(dashboard.criticalBed.nurseTasks.length, 4);
+assert.match(dashboard.criticalBed.nurseTasks[0].label, /Reposition/i);
+assert.match(dashboard.criticalBed.nurseTasks.at(-1).label, /Acknowledge/i);
 
 const rawHardwareReading = {
   bedId: "Prototype Bed",
@@ -156,5 +163,22 @@ assert.deepEqual(hardwareUpdatedBeds[0].pressure.zones, [10, 20, 80, 90]);
 assert.equal(hardwareUpdatedBeds[0].iv.remainingMl, 34);
 assert.equal(hardwareUpdatedBeds[0].acknowledged, false);
 assert.deepEqual(hardwareUpdatedBeds[1], beds[1]);
+
+const pressureScenario = buildDemoScenarioBeds(beds, "pressure-ulcer");
+assert.deepEqual(pressureScenario[0].pressure.zones, [18, 42, 88, 92]);
+assert.equal(pressureScenario[0].iv.abnormalFlow, false);
+assert.equal(buildDashboardState(pressureScenario).criticalBed.id, "Bed 01");
+
+const ivScenario = buildDemoScenarioBeds(beds, "iv-abnormal");
+assert.equal(ivScenario[2].iv.remainingMl, 36);
+assert.equal(ivScenario[2].iv.abnormalFlow, true);
+const ivScenarioDashboard = buildDashboardState(ivScenario);
+assert.equal(ivScenarioDashboard.criticalBed.id, "Bed 03");
+assert.match(ivScenarioDashboard.criticalBed.nurseTasks[0].label, /Inspect IV/i);
+
+const rushScenario = buildDemoScenarioBeds(beds, "multi-bed-rush");
+const rushDashboard = buildDashboardState(rushScenario);
+assert.equal(rushDashboard.summary.urgent, 3);
+assert.equal(rushDashboard.priorityQueue.length, 3);
 
 console.log("carehub-core tests passed");
