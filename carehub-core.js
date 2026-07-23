@@ -166,6 +166,56 @@ export function applyHardwareReading(beds, reading) {
   );
 }
 
+export function buildDemoScenarioBeds(beds, scenario) {
+  return beds.map((sourceBed, index) => {
+    const bed = {
+      ...sourceBed,
+      pressure: { zones: [18, 24, 30, 26], highDurationSec: 0, lastMovementMin: 8 },
+      iv: { remainingMl: 220, flowMlPerMin: 6, abnormalFlow: false },
+      acknowledged: false,
+    };
+
+    if (scenario === "pressure-ulcer" && index === 0) {
+      return {
+        ...bed,
+        pressure: { zones: [18, 42, 88, 92], highDurationSec: 76, lastMovementMin: 38 },
+        iv: { remainingMl: 190, flowMlPerMin: 6, abnormalFlow: false },
+        acknowledged: false,
+      };
+    }
+
+    if (scenario === "iv-abnormal" && index === 2) {
+      return {
+        ...bed,
+        pressure: { zones: [30, 36, 41, 38], highDurationSec: 0, lastMovementMin: 12 },
+        iv: { remainingMl: 36, flowMlPerMin: 0, abnormalFlow: true },
+        acknowledged: false,
+      };
+    }
+
+    if (scenario === "multi-bed-rush") {
+      const rushCases = [
+        {
+          pressure: { zones: [20, 44, 86, 91], highDurationSec: 82, lastMovementMin: 40 },
+          iv: { remainingMl: 180, flowMlPerMin: 6, abnormalFlow: false },
+        },
+        {
+          pressure: { zones: [24, 36, 42, 39], highDurationSec: 0, lastMovementMin: 18 },
+          iv: { remainingMl: 32, flowMlPerMin: 0, abnormalFlow: true },
+        },
+        {
+          pressure: { zones: [48, 64, 78, 72], highDurationSec: 58, lastMovementMin: 32 },
+          iv: { remainingMl: 34, flowMlPerMin: 4, abnormalFlow: false },
+        },
+      ];
+      const rushCase = rushCases[index];
+      if (rushCase) return { ...bed, ...rushCase, acknowledged: false };
+    }
+
+    return bed;
+  });
+}
+
 function toNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
