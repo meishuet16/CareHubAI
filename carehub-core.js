@@ -96,11 +96,12 @@ export function buildDashboardState(beds) {
   const priorityQueue = enrichedBeds
     .filter((bed) => bed.level !== "Stable" && bed.level !== "Acknowledged")
     .sort(comparePriority);
+  const criticalBed = priorityQueue[0] || enrichedBeds[0];
 
   return {
     beds: enrichedBeds,
     priorityQueue,
-    criticalBed: priorityQueue[0] || enrichedBeds[0],
+    criticalBed,
     nextAction: buildNextAction(priorityQueue[0]),
     nurseDecision: buildNurseDecision(priorityQueue),
     summary: {
@@ -118,6 +119,7 @@ export function buildDashboardState(beds) {
     eventLog: buildEventLog(enrichedBeds),
     sensorPipeline: buildSensorPipeline(),
     prototypeFlow: buildPrototypeFlow(),
+    visualization: buildVisualizationState(enrichedBeds, criticalBed.id),
   };
 }
 
@@ -214,6 +216,69 @@ export function buildDemoScenarioBeds(beds, scenario) {
 
     return bed;
   });
+}
+
+export function buildVisualizationState(enrichedBeds, selectedBedId) {
+  const selectedBed = enrichedBeds.find((bed) => bed.id === selectedBedId) || enrichedBeds[0];
+  const wardSlots = [
+    { x: 18, y: 24 },
+    { x: 58, y: 18 },
+    { x: 18, y: 62 },
+    { x: 58, y: 58 },
+  ];
+  const nurseStation = { label: "Nurse Station", x: 8, y: 8 };
+
+  return {
+    pressureZones: selectedBed.pressure.zones.map((value, index) => ({
+      label: ["Head", "Back", "Hip", "Leg"][index],
+      value,
+      level: getPressureLevel(value),
+    })),
+    ivBag: {
+      fillPercent: round(clamp((selectedBed.iv.remainingMl / 500) * 100)),
+      remainingMl: selectedBed.iv.remainingMl,
+      status: selectedBed.iv.abnormalFlow
+        ? "Abnormal"
+        : selectedBed.iv.remainingMl <= 50
+          ? "Low"
+          : "Normal",
+    },
+    wardBeds: enrichedBeds.map((bed, index) => ({
+      id: bed.id,
+      level: bed.level,
+      score: bed.priorityScore,
+      selected: bed.id === selectedBedId,
+      x: wardSlots[index % wardSlots.length].x,
+      y: wardSlots[index % wardSlots.length].y,
+    })),
+    nurseRoute: {
+      targetBedId: selectedBed.id,
+      from: nurseStation,
+      to: wardSlots[enrichedBeds.findIndex((bed) => bed.id === selectedBed.id)] || wardSlots[0],
+    },
+    triagePipeline: [
+      {
+        label: "Pressure",
+        value: `${selectedBed.pressure.score}/100`,
+        status: selectedBed.pressure.level,
+      },
+      {
+        label: "IV",
+        value: `${selectedBed.iv.score}/100`,
+        status: selectedBed.iv.level,
+      },
+      {
+        label: "AI Triage",
+        value: `${selectedBed.priorityScore}/100`,
+        status: "Prioritizing",
+      },
+      {
+        label: "Nurse Task",
+        value: selectedBed.id,
+        status: selectedBed.recommendedAction,
+      },
+    ],
+  };
 }
 
 function toNumber(value) {
