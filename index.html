@@ -17,6 +17,8 @@
           </p>
         </div>
         <div class="demo-controls">
+          <span id="hardware-mode-label" class="mode-pill simulated">Simulated Mode</span>
+          <button id="toggle-hardware" type="button">Use Hardware</button>
           <button id="simulate-pressure" type="button">Simulate Pressure</button>
           <button id="simulate-iv" type="button">Simulate IV</button>
           <button id="acknowledge-selected" type="button">Acknowledge</button>
@@ -145,6 +147,11 @@
             </div>
           </div>
           <div id="prototype-flow" class="prototype-flow"></div>
+          <div class="hardware-link">
+            <span>Bridge Status</span>
+            <strong id="hardware-status-copy">Waiting in simulated mode</strong>
+            <small id="last-update-copy">No hardware packet received</small>
+          </div>
         </section>
 
         <section class="panel">
