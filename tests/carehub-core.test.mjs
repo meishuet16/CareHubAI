@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import {
+  applyHardwareReading,
   buildDashboardState,
   calculateBedRisk,
   acknowledgeAlert,
+  normalizeHardwareReading,
 } from "../carehub-core.js";
 
 const beds = [
@@ -112,5 +114,47 @@ assert.equal(dashboard.nurseDecision.queue.length, 1);
 assert.match(dashboard.nurseDecision.headline, /Check Bed 01 first/);
 assert.match(dashboard.nurseDecision.why, /pressure/i);
 assert.equal(dashboard.prototypeFlow.at(-1).label, "Nurse action");
+
+const rawHardwareReading = {
+  bedId: "Prototype Bed",
+  pressure: {
+    zones: [-12.4, 44.5, 109, "bad"],
+    highDurationSec: -9,
+    lastMovementMin: "18.6",
+  },
+  iv: {
+    remainingMl: "42.7",
+    flowMlPerMin: -3,
+    abnormalFlow: "yes",
+  },
+};
+const normalizedHardwareReading = normalizeHardwareReading(rawHardwareReading);
+assert.deepEqual(normalizedHardwareReading, {
+  bedId: "Prototype Bed",
+  pressure: {
+    zones: [0, 45, 100, 0],
+    highDurationSec: 0,
+    lastMovementMin: 19,
+  },
+  iv: {
+    remainingMl: 43,
+    flowMlPerMin: 0,
+    abnormalFlow: true,
+  },
+});
+assert.equal(normalizeHardwareReading({ pressure: { zones: [1, 2] } }), null);
+
+const hardwareUpdatedBeds = applyHardwareReading(
+  [{ ...beds[0], acknowledged: true }, beds[1]],
+  {
+    bedId: "Bed 01",
+    pressure: { zones: [10, 20, 80, 90], highDurationSec: 61, lastMovementMin: 28 },
+    iv: { remainingMl: 34, flowMlPerMin: 5, abnormalFlow: false },
+  },
+);
+assert.deepEqual(hardwareUpdatedBeds[0].pressure.zones, [10, 20, 80, 90]);
+assert.equal(hardwareUpdatedBeds[0].iv.remainingMl, 34);
+assert.equal(hardwareUpdatedBeds[0].acknowledged, false);
+assert.deepEqual(hardwareUpdatedBeds[1], beds[1]);
 
 console.log("carehub-core tests passed");
