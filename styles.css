@@ -614,6 +614,34 @@ h3 {
   border-left-color: var(--yellow);
 }
 
+.dispatch-ticket {
+  position: relative;
+}
+
+.dispatch-ticket::after {
+  background: currentColor;
+  border-radius: 999px;
+  content: "";
+  height: 10px;
+  position: absolute;
+  right: 12px;
+  top: 14px;
+  width: 10px;
+}
+
+.dispatch-ticket.urgent {
+  color: var(--red);
+}
+
+.dispatch-ticket.monitor {
+  color: var(--yellow);
+}
+
+.dispatch-ticket strong,
+.dispatch-ticket small {
+  color: var(--ink);
+}
+
 .bed-tile.selected {
   outline: 3px solid rgba(17, 165, 160, 0.34);
 }
