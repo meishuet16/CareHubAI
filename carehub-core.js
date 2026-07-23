@@ -238,6 +238,79 @@ function buildExplanation(pressure, iv) {
   return notes.length > 0 ? notes.join(" and ") : "All tracked bedside signals are stable";
 }
 
+function buildAiExplanation(pressure, iv, priorityScore) {
+  return [
+    {
+      label: "Pressure risk",
+      value: `${pressure.score}/100`,
+      detail: `${pressure.level} pressure in zone ${pressure.highestZone + 1}`,
+    },
+    {
+      label: "IV risk",
+      value: `${iv.score}/100`,
+      detail: iv.abnormalFlow
+        ? "abnormal flow pattern"
+        : iv.timeRemainingMin === null
+          ? "flow paused"
+          : `${iv.timeRemainingMin} min remaining`,
+    },
+    {
+      label: "Movement gap",
+      value: `${pressure.zones.length} zones`,
+      detail: `highest pressure ${pressure.maxPressure}, average ${pressure.averagePressure}`,
+    },
+    {
+      label: "AI priority",
+      value: `${priorityScore}/100`,
+      detail:
+        pressure.level === "High"
+          ? "sustained high pressure drives the first check"
+          : iv.level === "Urgent"
+            ? "IV abnormality drives the first check"
+            : "combined bedside signals determine queue order",
+    },
+  ];
+}
+
+function buildNurseTasks(pressure, iv) {
+  const tasks = [];
+
+  if (pressure.level === "High") {
+    tasks.push({
+      label: "Reposition patient",
+      detail: `Relieve pressure around zone ${pressure.highestZone + 1}`,
+    });
+    tasks.push({
+      label: "Inspect skin condition",
+      detail: "Check redness or discomfort before logging response",
+    });
+  } else if (pressure.level === "Medium") {
+    tasks.push({
+      label: "Check posture",
+      detail: `Review pressure trend around zone ${pressure.highestZone + 1}`,
+    });
+  }
+
+  if (iv.level === "Urgent") {
+    tasks.push({
+      label: "Inspect IV bag and line",
+      detail: iv.abnormalFlow ? "Flow pattern looks abnormal" : `${iv.remainingMl} ml remaining`,
+    });
+  } else if (iv.level === "Monitor") {
+    tasks.push({
+      label: "Prepare IV replacement",
+      detail: `${iv.timeRemainingMin} min estimated remaining`,
+    });
+  }
+
+  tasks.push({
+    label: "Acknowledge alert",
+    detail: "Confirm nurse has seen the bedside risk",
+  });
+
+  return tasks.slice(0, 4);
+}
+
 function buildRecommendedAction(pressure, iv) {
   const actions = [];
   if (pressure.level === "High") actions.push("Reposition patient");
