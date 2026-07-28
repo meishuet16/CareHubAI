@@ -229,6 +229,7 @@ export function buildVisualizationState(enrichedBeds, selectedBedId) {
   const nurseStation = { label: "Nurse Station", x: 8, y: 8 };
 
   return {
+    wardType: "2.5D Digital Twin",
     pressureZones: selectedBed.pressure.zones.map((value, index) => ({
       label: ["Head", "Back", "Hip", "Leg"][index],
       value,
@@ -247,7 +248,10 @@ export function buildVisualizationState(enrichedBeds, selectedBedId) {
       id: bed.id,
       level: bed.level,
       score: bed.priorityScore,
+      pressureStatus: bed.pressure.level,
+      ivStatus: bed.iv.level,
       selected: bed.id === selectedBedId,
+      twinVariant: bed.id === selectedBedId ? "priority" : bed.level.toLowerCase(),
       x: wardSlots[index % wardSlots.length].x,
       y: wardSlots[index % wardSlots.length].y,
     })),
