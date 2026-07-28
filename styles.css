@@ -590,7 +590,7 @@ h3 {
 }
 
 .bed-map {
-  min-height: 280px;
+  min-height: 430px;
 }
 
 .bed-tile,
@@ -680,6 +680,7 @@ h3 {
 
 .ward-floor {
   background:
+    radial-gradient(circle at 10% 10%, rgba(17, 165, 160, 0.1), transparent 22%),
     linear-gradient(90deg, transparent 49%, rgba(18, 34, 42, 0.06) 50%, transparent 51%),
     linear-gradient(180deg, transparent 49%, rgba(18, 34, 42, 0.06) 50%, transparent 51%),
     #f7fbfc;
@@ -690,14 +691,134 @@ h3 {
 }
 
 .ward-floor .bed-tile {
-  min-height: 84px;
+  background: transparent;
+  border: 0;
+  border-left: 0;
+  display: grid;
+  gap: 6px;
+  min-height: 104px;
+  padding: 0;
   position: absolute;
-  width: 30%;
+  transform: skewY(-5deg);
+  width: 31%;
   z-index: 2;
 }
 
 .ward-floor .bed-tile.urgent {
   animation: alertPulse 1.8s ease-in-out infinite;
+}
+
+.ward-floor .bed-tile.selected {
+  outline: 0;
+  z-index: 4;
+}
+
+.ward-floor .bed-tile.selected .bed-frame {
+  box-shadow:
+    0 0 0 3px rgba(17, 165, 160, 0.38),
+    0 18px 26px rgba(17, 70, 82, 0.2);
+}
+
+.bed-object {
+  position: relative;
+}
+
+.bed-frame {
+  background: linear-gradient(145deg, #ffffff, #e8f3f5);
+  border: 1px solid #c8dce2;
+  border-radius: 14px;
+  box-shadow: 0 14px 20px rgba(17, 70, 82, 0.13);
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 32px 1fr 8px;
+  min-height: 50px;
+  padding: 8px;
+}
+
+.bed-pillow {
+  background: #ffffff;
+  border: 1px solid #d9e8eb;
+  border-radius: 9px;
+}
+
+.bed-mattress {
+  background: linear-gradient(90deg, #e5f5f2, #f9fefe);
+  border: 1px solid #d3e7eb;
+  border-radius: 10px;
+}
+
+.bed-pressure-strip {
+  border-radius: 999px;
+}
+
+.bed-pressure-strip.low {
+  background: var(--green);
+}
+
+.bed-pressure-strip.medium {
+  background: var(--yellow);
+}
+
+.bed-pressure-strip.high {
+  background: var(--red);
+}
+
+.iv-mini-pole {
+  height: 52px;
+  position: absolute;
+  right: -14px;
+  top: -20px;
+  width: 20px;
+}
+
+.iv-mini-pole::before {
+  background: #7a949c;
+  content: "";
+  height: 54px;
+  left: 9px;
+  position: absolute;
+  width: 2px;
+}
+
+.iv-mini-pole i {
+  background: #dff4f1;
+  border: 1px solid #9bcac7;
+  border-radius: 6px 6px 8px 8px;
+  display: block;
+  height: 20px;
+  left: 2px;
+  position: absolute;
+  top: 10px;
+  width: 16px;
+}
+
+.bed-meta {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-shadow: 0 8px 14px rgba(17, 70, 82, 0.08);
+  padding: 7px;
+  transform: skewY(5deg);
+}
+
+.bed-meta small {
+  color: var(--muted);
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.ward-floor .bed-tile span {
+  font-size: 0.72rem;
+}
+
+.ward-floor .bed-tile strong {
+  font-size: 0.95rem;
+}
+
+.ward-floor .bed-tile b {
+  font-size: 1.15rem;
 }
 
 .nurse-station {
@@ -715,7 +836,7 @@ h3 {
   position: absolute;
   top: 8%;
   width: 96px;
-  z-index: 3;
+  z-index: 5;
 }
 
 .nurse-route {
@@ -730,10 +851,10 @@ h3 {
 }
 
 .nurse-route line {
-  stroke: rgba(17, 165, 160, 0.85);
+  stroke: rgba(17, 165, 160, 0.95);
   stroke-dasharray: 5 5;
   stroke-linecap: round;
-  stroke-width: 1.5;
+  stroke-width: 2.2;
 }
 
 @keyframes alertPulse {
