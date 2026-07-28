@@ -233,13 +233,24 @@ function renderBedMap(visualization) {
     const tile = document.createElement("button");
     tile.type = "button";
     tile.dataset.select = bed.id;
-    tile.className = `bed-tile ${bed.level.toLowerCase()} ${bed.selected ? "selected" : ""}`;
+    tile.className = `bed-tile twin-bed ${bed.level.toLowerCase()} ${bed.twinVariant} ${bed.selected ? "selected" : ""}`;
     tile.style.left = `${bed.x}%`;
     tile.style.top = `${bed.y}%`;
     tile.innerHTML = `
-      <span>${bed.id}</span>
-      <strong>${bed.level}</strong>
-      <b>${bed.priorityScore}</b>
+      <div class="bed-object" aria-hidden="true">
+        <div class="iv-mini-pole"><i></i></div>
+        <div class="bed-frame">
+          <span class="bed-pillow"></span>
+          <span class="bed-mattress"></span>
+          <span class="bed-pressure-strip ${bed.pressureStatus.toLowerCase()}"></span>
+        </div>
+      </div>
+      <div class="bed-meta">
+        <span>${bed.id}</span>
+        <strong>${bed.level}</strong>
+        <small>P ${bed.pressureStatus} · IV ${bed.ivStatus}</small>
+        <b>${bed.priorityScore}</b>
+      </div>
     `;
     elements.bedMap.append(tile);
   });
@@ -505,6 +516,7 @@ function buildVisualizationState(enrichedBeds, selectedBedId) {
   const nurseStation = { label: "Nurse Station", x: 8, y: 8 };
 
   return {
+    wardType: "2.5D Digital Twin",
     pressureZones: selectedBed.pressure.zones.map((value, index) => ({
       label: ["Head", "Back", "Hip", "Leg"][index],
       value,
@@ -523,7 +535,10 @@ function buildVisualizationState(enrichedBeds, selectedBedId) {
       id: bed.id,
       level: bed.level,
       priorityScore: bed.priorityScore,
+      pressureStatus: bed.pressure.level,
+      ivStatus: bed.iv.level,
       selected: bed.id === selectedBedId,
+      twinVariant: bed.id === selectedBedId ? "priority" : bed.level.toLowerCase(),
       x: wardSlots[index % wardSlots.length].x,
       y: wardSlots[index % wardSlots.length].y,
     })),
