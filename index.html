@@ -3,33 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareHub Attention Dashboard</title>
+    <title>CareHub · Ward Monitoring</title>
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./demo-visuals.css" />
+    <link rel="stylesheet" href="./product-polish.css" />
   </head>
   <body>
     <main class="dashboard">
+      <nav class="product-bar" aria-label="CareHub status">
+        <div class="brand-lockup"><div class="brand-mark">C+</div><div class="brand-copy"><strong>CareHub</strong><small>Bedside Intelligence · Ward A</small></div></div>
+        <div class="product-status"><span class="bar-chip"><i class="live-dot"></i>Monitoring active</span><span class="bar-chip">4 beds connected</span><span class="bar-chip">Nurse Station 01</span></div>
+      </nav>
       <header class="page-header">
         <div>
-          <p class="eyebrow">CareHub · Explainable Bedside Attention Support</p>
-          <h1>Monitored Needs Requiring Review</h1>
-          <p class="subtitle">CareHub turns bedside sensor signals and patient context into explainable attention cues. Nurses retain the final clinical judgement.</p>
-          <div class="ward-context"><span>Ward A</span><span>4 monitored beds</span><span>Human-in-the-loop decision support</span></div>
+          <p class="eyebrow">Ward overview · Explainable attention support</p>
+          <h1>Bedside Monitoring</h1>
+          <p class="subtitle">Continuous pressure and IV monitoring with patient context, surfaced as clear attention cues for nurse review.</p>
+          <div class="ward-context"><span>Ward A</span><span>4 monitored beds</span><span>Human-in-the-loop</span></div>
         </div>
-        <div class="demo-controls">
-          <span id="hardware-mode-label" class="mode-pill simulated">Simulated Mode</span>
-          <button id="toggle-hardware" type="button">Use Hardware</button>
-          <button data-scenario="pressure-ulcer" type="button">Pressure Exposure</button>
-          <button data-scenario="iv-abnormal" type="button">IV Abnormal</button>
-          <button data-scenario="multi-bed-rush" type="button">Multi-Bed Rush</button>
-          <button id="simulate-pressure" type="button">Simulate Pressure</button>
-          <button id="simulate-iv" type="button">Simulate IV</button>
-          <button id="acknowledge-selected" type="button">Acknowledge</button>
-          <button id="simulate-reset" type="button">Reset</button>
-        </div>
+        <details class="demo-console">
+          <summary>Demo Console</summary>
+          <div class="demo-controls">
+            <span id="hardware-mode-label" class="mode-pill simulated">Simulated Mode</span>
+            <button id="toggle-hardware" type="button">Use Hardware</button>
+            <button data-scenario="pressure-ulcer" type="button">Pressure Exposure</button>
+            <button data-scenario="iv-abnormal" type="button">IV Abnormal</button>
+            <button data-scenario="multi-bed-rush" type="button">Multi-Bed Rush</button>
+            <button id="simulate-pressure" type="button">Simulate Pressure</button>
+            <button id="simulate-iv" type="button">Simulate IV</button>
+            <button id="acknowledge-selected" type="button">Acknowledge</button>
+            <button id="simulate-reset" type="button">Reset</button>
+          </div>
+        </details>
       </header>
       <section class="summary-row" aria-label="Ward summary">
-        <article><span>Beds</span><strong id="total-count">0</strong></article>
+        <article><span>Monitored Beds</span><strong id="total-count">0</strong></article>
         <article class="urgent"><span>High Attention</span><strong id="urgent-count">0</strong></article>
         <article class="monitor"><span>Review / Watch</span><strong id="monitor-count">0</strong></article>
         <article class="stable"><span>Stable</span><strong id="stable-count">0</strong></article>
@@ -38,27 +46,29 @@
       </section>
       <section class="focus-grid">
         <section class="primary-card">
-          <div class="card-heading"><div><p class="eyebrow">Selected Monitored Need</p><h2 id="decision-headline">Review Bed 02</h2></div><span id="critical-status" class="status-pill urgent">High attention</span></div>
+          <div class="card-heading"><div><p class="eyebrow">Selected bed · Live monitoring</p><h2 id="decision-headline">Review Bed 02</h2></div><span id="critical-status" class="status-pill urgent">High attention</span></div>
           <div class="patient-action"><span id="critical-title">Bed 02</span><strong id="critical-action">Review posture and pressure-relief needs</strong><p id="critical-reason">Waiting for monitored signal interpretation</p></div>
           <div class="patient-data">
-            <div><div class="viz-heading"><h3>Smart Bed Pressure Map</h3><span>Animated 8 × 8 demo view</span></div><div id="pressure-map" class="pressure-map mattress-map"></div></div>
+            <div><div class="viz-heading"><h3>Smart Pressure Mattress</h3><span>8 × 8 sensor field · live view</span></div><div id="pressure-map" class="pressure-map mattress-map"></div><div class="visual-caption"><span>Relative pressure distribution</span><b>Pressure AI output plugs into this view</b></div></div>
             <div class="visual-stack">
+              <div class="viz-heading"><h3>IV Monitoring</h3><span>Continuous</span></div>
               <div class="iv-visual"><div class="iv-hook"></div><div class="iv-bag"><div id="iv-fill" class="iv-fill"></div><span id="iv-status-label">Monitoring</span></div><div class="iv-line"></div></div>
-              <div class="readings"><article><span>Decision Context</span><strong id="live-score">Context available</strong></article><article><span>IV Remaining</span><strong id="live-iv">--</strong></article><article><span>Pressure Exposure</span><strong id="live-age">--</strong></article></div>
+              <div class="readings"><article><span>Context</span><strong id="live-score">Available</strong></article><article><span>IV Remaining</span><strong id="live-iv">--</strong></article><article><span>Exposure</span><strong id="live-age">--</strong></article></div>
             </div>
           </div>
-          <div class="task-panel"><div><p class="eyebrow">Nurse Review Support</p><h3>What the system can explain</h3></div><div id="nurse-tasks" class="nurse-tasks"></div></div>
+          <div class="task-panel"><div><p class="eyebrow">Nurse review support</p><h3>Recommended review workflow</h3></div><div id="nurse-tasks" class="nurse-tasks"></div></div>
         </section>
         <aside class="side-stack">
-          <section class="panel"><div class="card-heading"><div><p class="eyebrow">Explainable Care Summary</p><h2>Signal → Context → Attention</h2></div></div><div class="reason-list"><article><span>Raw signals</span><strong id="raw-signal-copy">Pressure · IV</strong></article><article><span>Attention state</span><strong id="risk-pattern-copy">Waiting for evaluation</strong></article><article><span>Suggested review</span><strong id="response-copy">Continue monitoring</strong></article></div><div id="ai-breakdown" class="ai-breakdown triage-pipeline"></div></section>
-          <section class="panel"><div class="card-heading"><div><p class="eyebrow">Other Active Needs</p><h2>Care Attention Queue</h2></div><span id="shift-time" class="time-pill">--:--</span></div><div id="priority-list" class="priority-list"></div></section>
+          <section class="panel"><div class="card-heading"><div><p class="eyebrow">Why this needs attention</p><h2>Explainable Care Summary</h2></div><span class="demo-badge">Live interpretation</span></div><div class="reason-list"><article><span>Raw signals</span><strong id="raw-signal-copy">Pressure · IV</strong></article><article><span>Attention state</span><strong id="risk-pattern-copy">Waiting for evaluation</strong></article><article><span>Suggested review</span><strong id="response-copy">Continue monitoring</strong></article></div><div id="ai-breakdown" class="ai-breakdown triage-pipeline"></div></section>
+          <section class="panel"><div class="card-heading"><div><p class="eyebrow">Ward attention</p><h2>Other Active Needs</h2></div><span id="shift-time" class="time-pill">--:--</span></div><div id="priority-list" class="priority-list"></div></section>
         </aside>
       </section>
       <section class="lower-grid">
-        <section class="panel"><div class="card-heading"><div><p class="eyebrow">Ward Map</p><h2>2.5D Digital Twin Ward</h2></div></div><div id="bed-map" class="bed-map ward-floor"></div></section>
-        <section class="panel"><div class="card-heading"><div><p class="eyebrow">Live Prototype Flow</p><h2>Sensor → Interpretation → Context → Attention</h2></div></div><div id="prototype-flow" class="prototype-flow"></div><div class="hardware-link"><span>Bridge Status</span><strong id="hardware-status-copy">Waiting in simulated mode</strong><small id="last-update-copy">No hardware packet received</small></div><pre id="hardware-packet" class="packet-view">{ "mode": "simulated" }</pre></section>
-        <section class="panel"><div class="card-heading"><div><p class="eyebrow">Event Log</p><h2>Unresolved Monitored Needs</h2></div></div><div id="event-log" class="event-log"></div></section>
+        <section class="panel"><div class="card-heading"><div><p class="eyebrow">Spatial overview</p><h2>Ward Digital Twin</h2></div><span class="demo-badge">4 beds</span></div><div id="bed-map" class="bed-map ward-floor"></div></section>
+        <section class="panel"><div class="card-heading"><div><p class="eyebrow">System intelligence</p><h2>Live Processing Flow</h2></div></div><div id="prototype-flow" class="prototype-flow"></div><div class="hardware-link"><span>Data Bridge</span><strong id="hardware-status-copy">Waiting in simulated mode</strong><small id="last-update-copy">No hardware packet received</small></div><pre id="hardware-packet" class="packet-view">{ "mode": "simulated" }</pre></section>
+        <section class="panel"><div class="card-heading"><div><p class="eyebrow">Traceability</p><h2>Event Log</h2></div></div><div id="event-log" class="event-log"></div></section>
       </section>
+      <footer class="footer-note"><strong>CareHub · Bedside Intelligence</strong><span>Decision-support prototype · Clinical judgement remains with the care team</span></footer>
     </main>
     <script type="module" src="./dashboard-v2.js"></script>
     <script type="module" src="./demo-visuals.js"></script>
