@@ -6,6 +6,6 @@
   "scripts": {
     "bridge:mock": "node bridge/mock-bridge.js",
     "test": "node tests/carehub-core.test.mjs && node tests/carehub-attention-core.test.mjs",
-    "check": "node --check dashboard-v2.js && node --check carehub-attention-core.js && node --check bridge/mock-bridge.js"
+    "check": "node --check dashboard-v2.js && node --check dashboard-navigation.js && node --check demo-visuals.js && node --check carehub-attention-core.js && node --check bridge/mock-bridge.js"
   }
 }
