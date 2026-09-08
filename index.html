@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareHub Attention Dashboard</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./demo-visuals.css" />
   </head>
   <body>
     <main class="dashboard">
@@ -12,14 +13,8 @@
         <div>
           <p class="eyebrow">CareHub · Explainable Bedside Attention Support</p>
           <h1>Monitored Needs Requiring Review</h1>
-          <p class="subtitle">
-            CareHub turns bedside sensor signals and patient context into explainable attention cues. Nurses retain the final clinical judgement.
-          </p>
-          <div class="ward-context">
-            <span>Ward A</span>
-            <span>4 monitored beds</span>
-            <span>Human-in-the-loop decision support</span>
-          </div>
+          <p class="subtitle">CareHub turns bedside sensor signals and patient context into explainable attention cues. Nurses retain the final clinical judgement.</p>
+          <div class="ward-context"><span>Ward A</span><span>4 monitored beds</span><span>Human-in-the-loop decision support</span></div>
         </div>
         <div class="demo-controls">
           <span id="hardware-mode-label" class="mode-pill simulated">Simulated Mode</span>
@@ -33,170 +28,39 @@
           <button id="simulate-reset" type="button">Reset</button>
         </div>
       </header>
-
       <section class="summary-row" aria-label="Ward summary">
-        <article>
-          <span>Beds</span>
-          <strong id="total-count">0</strong>
-        </article>
-        <article class="urgent">
-          <span>High Attention</span>
-          <strong id="urgent-count">0</strong>
-        </article>
-        <article class="monitor">
-          <span>Review / Watch</span>
-          <strong id="monitor-count">0</strong>
-        </article>
-        <article class="stable">
-          <span>Stable</span>
-          <strong id="stable-count">0</strong>
-        </article>
-        <article>
-          <span>IV Watch</span>
-          <strong id="iv-watch-count">0</strong>
-        </article>
-        <article>
-          <span>Active Needs</span>
-          <strong id="avg-priority">0</strong>
-        </article>
+        <article><span>Beds</span><strong id="total-count">0</strong></article>
+        <article class="urgent"><span>High Attention</span><strong id="urgent-count">0</strong></article>
+        <article class="monitor"><span>Review / Watch</span><strong id="monitor-count">0</strong></article>
+        <article class="stable"><span>Stable</span><strong id="stable-count">0</strong></article>
+        <article><span>IV Watch</span><strong id="iv-watch-count">0</strong></article>
+        <article><span>Active Needs</span><strong id="avg-priority">0</strong></article>
       </section>
-
       <section class="focus-grid">
         <section class="primary-card">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Selected Monitored Need</p>
-              <h2 id="decision-headline">Review Bed 02</h2>
-            </div>
-            <span id="critical-status" class="status-pill urgent">High attention</span>
-          </div>
-
-          <div class="patient-action">
-            <span id="critical-title">Bed 02</span>
-            <strong id="critical-action">Review posture and pressure-relief needs</strong>
-            <p id="critical-reason">Waiting for monitored signal interpretation</p>
-          </div>
-
+          <div class="card-heading"><div><p class="eyebrow">Selected Monitored Need</p><h2 id="decision-headline">Review Bed 02</h2></div><span id="critical-status" class="status-pill urgent">High attention</span></div>
+          <div class="patient-action"><span id="critical-title">Bed 02</span><strong id="critical-action">Review posture and pressure-relief needs</strong><p id="critical-reason">Waiting for monitored signal interpretation</p></div>
           <div class="patient-data">
-            <div>
-              <div class="viz-heading">
-                <h3>Smart Bed Pressure Map</h3>
-                <span>Prototype relative pressure view</span>
-              </div>
-              <div id="pressure-map" class="pressure-map mattress-map"></div>
-            </div>
+            <div><div class="viz-heading"><h3>Smart Bed Pressure Map</h3><span>Animated 8 × 8 demo view</span></div><div id="pressure-map" class="pressure-map mattress-map"></div></div>
             <div class="visual-stack">
-              <div class="iv-visual">
-                <div class="iv-hook"></div>
-                <div class="iv-bag">
-                  <div id="iv-fill" class="iv-fill"></div>
-                  <span id="iv-status-label">Monitoring</span>
-                </div>
-                <div class="iv-line"></div>
-              </div>
-              <div class="readings">
-                <article>
-                  <span>Decision Context</span>
-                  <strong id="live-score">Context available</strong>
-                </article>
-                <article>
-                  <span>IV Remaining</span>
-                  <strong id="live-iv">--</strong>
-                </article>
-                <article>
-                  <span>Pressure Exposure</span>
-                  <strong id="live-age">--</strong>
-                </article>
-              </div>
+              <div class="iv-visual"><div class="iv-hook"></div><div class="iv-bag"><div id="iv-fill" class="iv-fill"></div><span id="iv-status-label">Monitoring</span></div><div class="iv-line"></div></div>
+              <div class="readings"><article><span>Decision Context</span><strong id="live-score">Context available</strong></article><article><span>IV Remaining</span><strong id="live-iv">--</strong></article><article><span>Pressure Exposure</span><strong id="live-age">--</strong></article></div>
             </div>
           </div>
-
-          <div class="task-panel">
-            <div>
-              <p class="eyebrow">Nurse Review Support</p>
-              <h3>What the system can explain</h3>
-            </div>
-            <div id="nurse-tasks" class="nurse-tasks"></div>
-          </div>
+          <div class="task-panel"><div><p class="eyebrow">Nurse Review Support</p><h3>What the system can explain</h3></div><div id="nurse-tasks" class="nurse-tasks"></div></div>
         </section>
-
         <aside class="side-stack">
-          <section class="panel">
-            <div class="card-heading">
-              <div>
-                <p class="eyebrow">Explainable Care Summary</p>
-                <h2>Signal → Context → Attention</h2>
-              </div>
-            </div>
-            <div class="reason-list">
-              <article>
-                <span>Raw signals</span>
-                <strong id="raw-signal-copy">Pressure · IV</strong>
-              </article>
-              <article>
-                <span>Attention state</span>
-                <strong id="risk-pattern-copy">Waiting for evaluation</strong>
-              </article>
-              <article>
-                <span>Suggested review</span>
-                <strong id="response-copy">Continue monitoring</strong>
-              </article>
-            </div>
-            <div id="ai-breakdown" class="ai-breakdown triage-pipeline"></div>
-          </section>
-
-          <section class="panel">
-            <div class="card-heading">
-              <div>
-                <p class="eyebrow">Other Active Needs</p>
-                <h2>Care Attention Queue</h2>
-              </div>
-              <span id="shift-time" class="time-pill">--:--</span>
-            </div>
-            <div id="priority-list" class="priority-list"></div>
-          </section>
+          <section class="panel"><div class="card-heading"><div><p class="eyebrow">Explainable Care Summary</p><h2>Signal → Context → Attention</h2></div></div><div class="reason-list"><article><span>Raw signals</span><strong id="raw-signal-copy">Pressure · IV</strong></article><article><span>Attention state</span><strong id="risk-pattern-copy">Waiting for evaluation</strong></article><article><span>Suggested review</span><strong id="response-copy">Continue monitoring</strong></article></div><div id="ai-breakdown" class="ai-breakdown triage-pipeline"></div></section>
+          <section class="panel"><div class="card-heading"><div><p class="eyebrow">Other Active Needs</p><h2>Care Attention Queue</h2></div><span id="shift-time" class="time-pill">--:--</span></div><div id="priority-list" class="priority-list"></div></section>
         </aside>
       </section>
-
       <section class="lower-grid">
-        <section class="panel">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Ward Map</p>
-              <h2>2.5D Digital Twin Ward</h2>
-            </div>
-          </div>
-          <div id="bed-map" class="bed-map ward-floor"></div>
-        </section>
-
-        <section class="panel">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Prototype Flow</p>
-              <h2>From Physical Signal To Nurse Review</h2>
-            </div>
-          </div>
-          <div id="prototype-flow" class="prototype-flow"></div>
-          <div class="hardware-link">
-            <span>Bridge Status</span>
-            <strong id="hardware-status-copy">Waiting in simulated mode</strong>
-            <small id="last-update-copy">No hardware packet received</small>
-          </div>
-          <pre id="hardware-packet" class="packet-view">{ "mode": "simulated" }</pre>
-        </section>
-
-        <section class="panel">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Event Log</p>
-              <h2>Unresolved Monitored Needs</h2>
-            </div>
-          </div>
-          <div id="event-log" class="event-log"></div>
-        </section>
+        <section class="panel"><div class="card-heading"><div><p class="eyebrow">Ward Map</p><h2>2.5D Digital Twin Ward</h2></div></div><div id="bed-map" class="bed-map ward-floor"></div></section>
+        <section class="panel"><div class="card-heading"><div><p class="eyebrow">Live Prototype Flow</p><h2>Sensor → Interpretation → Context → Attention</h2></div></div><div id="prototype-flow" class="prototype-flow"></div><div class="hardware-link"><span>Bridge Status</span><strong id="hardware-status-copy">Waiting in simulated mode</strong><small id="last-update-copy">No hardware packet received</small></div><pre id="hardware-packet" class="packet-view">{ "mode": "simulated" }</pre></section>
+        <section class="panel"><div class="card-heading"><div><p class="eyebrow">Event Log</p><h2>Unresolved Monitored Needs</h2></div></div><div id="event-log" class="event-log"></div></section>
       </section>
     </main>
-
     <script type="module" src="./dashboard-v2.js"></script>
+    <script type="module" src="./demo-visuals.js"></script>
   </body>
 </html>
