@@ -3,28 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareHub AI Dashboard</title>
+    <title>CareHub Attention Dashboard</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="dashboard">
       <header class="page-header">
         <div>
-          <p class="eyebrow">CareHub AI · Smart Bedside Nursing Assistant</p>
-          <h1>Next Patient To Check</h1>
+          <p class="eyebrow">CareHub · Explainable Bedside Attention Support</p>
+          <h1>Monitored Needs Requiring Review</h1>
           <p class="subtitle">
-            Pressure mat and IV signals are converted into one prioritized nurse action list.
+            CareHub turns bedside sensor signals and patient context into explainable attention cues. Nurses retain the final clinical judgement.
           </p>
           <div class="ward-context">
             <span>Ward A</span>
             <span>4 monitored beds</span>
-            <span>Human-in-the-loop alerts</span>
+            <span>Human-in-the-loop decision support</span>
           </div>
         </div>
         <div class="demo-controls">
           <span id="hardware-mode-label" class="mode-pill simulated">Simulated Mode</span>
           <button id="toggle-hardware" type="button">Use Hardware</button>
-          <button data-scenario="pressure-ulcer" type="button">Pressure Risk</button>
+          <button data-scenario="pressure-ulcer" type="button">Pressure Exposure</button>
           <button data-scenario="iv-abnormal" type="button">IV Abnormal</button>
           <button data-scenario="multi-bed-rush" type="button">Multi-Bed Rush</button>
           <button id="simulate-pressure" type="button">Simulate Pressure</button>
@@ -40,11 +40,11 @@
           <strong id="total-count">0</strong>
         </article>
         <article class="urgent">
-          <span>Urgent</span>
+          <span>High Attention</span>
           <strong id="urgent-count">0</strong>
         </article>
         <article class="monitor">
-          <span>Monitor</span>
+          <span>Review / Watch</span>
           <strong id="monitor-count">0</strong>
         </article>
         <article class="stable">
@@ -56,7 +56,7 @@
           <strong id="iv-watch-count">0</strong>
         </article>
         <article>
-          <span>Avg Score</span>
+          <span>Active Needs</span>
           <strong id="avg-priority">0</strong>
         </article>
       </section>
@@ -65,23 +65,23 @@
         <section class="primary-card">
           <div class="card-heading">
             <div>
-              <p class="eyebrow">Priority 1</p>
-              <h2 id="decision-headline">Check Bed 02 first</h2>
+              <p class="eyebrow">Selected Monitored Need</p>
+              <h2 id="decision-headline">Review Bed 02</h2>
             </div>
-            <span id="critical-status" class="status-pill urgent">Urgent</span>
+            <span id="critical-status" class="status-pill urgent">High attention</span>
           </div>
 
           <div class="patient-action">
             <span id="critical-title">Bed 02</span>
-            <strong id="critical-action">Reposition patient</strong>
-            <p id="critical-reason">pressure is high in zone 4</p>
+            <strong id="critical-action">Review posture and pressure-relief needs</strong>
+            <p id="critical-reason">Waiting for monitored signal interpretation</p>
           </div>
 
           <div class="patient-data">
             <div>
               <div class="viz-heading">
                 <h3>Smart Bed Pressure Map</h3>
-                <span>Mattress top view</span>
+                <span>Prototype relative pressure view</span>
               </div>
               <div id="pressure-map" class="pressure-map mattress-map"></div>
             </div>
@@ -90,21 +90,21 @@
                 <div class="iv-hook"></div>
                 <div class="iv-bag">
                   <div id="iv-fill" class="iv-fill"></div>
-                  <span id="iv-status-label">Normal</span>
+                  <span id="iv-status-label">Monitoring</span>
                 </div>
                 <div class="iv-line"></div>
               </div>
               <div class="readings">
                 <article>
-                  <span>AI Priority</span>
-                  <strong id="live-score">0 / 100</strong>
+                  <span>Decision Context</span>
+                  <strong id="live-score">Context available</strong>
                 </article>
                 <article>
                   <span>IV Remaining</span>
                   <strong id="live-iv">--</strong>
                 </article>
                 <article>
-                  <span>Alert Age</span>
+                  <span>Pressure Exposure</span>
                   <strong id="live-age">--</strong>
                 </article>
               </div>
@@ -113,8 +113,8 @@
 
           <div class="task-panel">
             <div>
-              <p class="eyebrow">Nurse Task Queue</p>
-              <h3>Immediate bedside actions</h3>
+              <p class="eyebrow">Nurse Review Support</p>
+              <h3>What the system can explain</h3>
             </div>
             <div id="nurse-tasks" class="nurse-tasks"></div>
           </div>
@@ -124,33 +124,33 @@
           <section class="panel">
             <div class="card-heading">
               <div>
-                <p class="eyebrow">AI Care Summary</p>
-                <h2>Triage Pipeline</h2>
+                <p class="eyebrow">Explainable Care Summary</p>
+                <h2>Signal → Context → Attention</h2>
               </div>
             </div>
             <div class="reason-list">
               <article>
                 <span>Raw signals</span>
-                <strong id="raw-signal-copy">Pressure High · IV Normal</strong>
+                <strong id="raw-signal-copy">Pressure · IV</strong>
               </article>
               <article>
-                <span>Risk pattern</span>
-                <strong id="risk-pattern-copy">Urgent · Score 50</strong>
+                <span>Attention state</span>
+                <strong id="risk-pattern-copy">Waiting for evaluation</strong>
               </article>
               <article>
-                <span>Nurse action</span>
-                <strong id="response-copy">Reposition patient</strong>
+                <span>Suggested review</span>
+                <strong id="response-copy">Continue monitoring</strong>
               </article>
             </div>
             <div id="ai-breakdown" class="ai-breakdown triage-pipeline"></div>
           </section>
 
           <section class="panel">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">Next In Queue</p>
-              <h2>Dispatch Queue</h2>
-            </div>
+            <div class="card-heading">
+              <div>
+                <p class="eyebrow">Other Active Needs</p>
+                <h2>Care Attention Queue</h2>
+              </div>
               <span id="shift-time" class="time-pill">--:--</span>
             </div>
             <div id="priority-list" class="priority-list"></div>
@@ -173,7 +173,7 @@
           <div class="card-heading">
             <div>
               <p class="eyebrow">Prototype Flow</p>
-              <h2>From Sensor To Nurse Action</h2>
+              <h2>From Physical Signal To Nurse Review</h2>
             </div>
           </div>
           <div id="prototype-flow" class="prototype-flow"></div>
@@ -189,7 +189,7 @@
           <div class="card-heading">
             <div>
               <p class="eyebrow">Event Log</p>
-              <h2>Unresolved Alerts</h2>
+              <h2>Unresolved Monitored Needs</h2>
             </div>
           </div>
           <div id="event-log" class="event-log"></div>
@@ -197,6 +197,6 @@
       </section>
     </main>
 
-    <script src="./app.js"></script>
+    <script type="module" src="./dashboard-v2.js"></script>
   </body>
 </html>
