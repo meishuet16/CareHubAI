@@ -66,6 +66,22 @@ The nurse-facing interface has two levels:
 
 ---
 
+## Dashboard Preview
+
+### Ward Overview
+
+The first screen gives nurses a ward-level view of all monitored beds, current attention states, the Care Attention Queue, live processing flow and recent events.
+
+![CareHub Ward Overview](assets/dashboard.jpg)
+
+### Bed Detail
+
+Selecting a bed opens a focused bedside view with the Smart Pressure Mattress, posture interpretation, IV monitoring, patient context, explainable reasoning and recommended nurse review workflow.
+
+![CareHub Bed Detail](assets/dashboard%20detail.jpg)
+
+---
+
 ## User Flow
 
 ```text
