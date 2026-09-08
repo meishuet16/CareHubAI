@@ -135,7 +135,7 @@ const levelClass = (level) => {
 function render() {
   const state = buildAttentionDashboardState(beds);
   const selectedBed = state.beds.find((bed) => bed.id === selectedBedId);
-  const focusBed = selectedBed && selectedBed.level !== "Stable" ? selectedBed : state.focusBed;
+  const focusBed = selectedBed || state.focusBed;
   selectedBedId = focusBed.id;
 
   renderClock();
