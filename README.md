@@ -1,88 +1,129 @@
-# CareHub AI
+# 🩺 CareHub AI
 
 **CareHub** is an AI-assisted bedside monitoring and nurse attention-support prototype built for **Project Nexus 2026 — Healthcare Technology**.
 
-It connects a **Smart Pressure Mat**, **Smart IV Monitor**, **Patient Call Button**, and nurse-facing **CareHub Dashboard** into one explainable monitoring workflow. The goal is not to replace nurses or perform autonomous clinical triage; CareHub helps the care team notice monitored bedside needs earlier, understand why they were surfaced, and decide what to do next.
+The idea is simple: instead of making nurses look at separate pressure, IV and bedside signals one by one, CareHub brings them into one place, adds patient context, and turns them into **clear, explainable attention cues**.
 
-> **Prototype boundary:** CareHub prioritises monitored bedside attention signals, not a patient's overall clinical urgency. Clinical prioritisation and final care decisions remain with healthcare professionals.
-
----
-
-## Problem Statement
-
-Nurses need to monitor multiple patients while bedside conditions can change between routine checks. Important signals may come from different places: prolonged pressure exposure, limited movement, an IV bag approaching empty or showing abnormal flow, wetness, or a direct patient call.
-
-The problem is therefore not simply collecting more sensor readings. Raw readings alone can create noise and force nurses to mentally combine disconnected information while already managing a busy ward.
-
-**How might we continuously monitor important bedside signals, interpret them with relevant patient context, and surface clear, explainable attention needs without pretending that an automated system can replace clinical judgement?**
-
-CareHub focuses on three gaps:
-
-1. **Continuous visibility** — bedside pressure and IV conditions can change between manual checks.
-2. **Fragmented signals** — pressure, IV, wetness and patient-call events are easier to act on when presented together.
-3. **Explainability** — nurses should be able to see the signal, interpretation and patient context behind an attention cue instead of receiving an opaque risk score.
+> CareHub does **not** decide who is the most clinically urgent patient. It surfaces monitored bedside needs and leaves final clinical prioritisation and care decisions to nurses.
 
 ---
 
-## Solution
+## 🚨 The Problem
 
-CareHub uses a simple pipeline:
+Nurses often need to monitor several patients at the same time, while bedside conditions can change between routine checks.
+
+A few examples:
+
+- a patient has been lying in the same pressure pattern for too long;
+- movement has reduced significantly;
+- an IV bag is almost empty or the flow becomes abnormal;
+- a wetness signal is detected;
+- a patient presses the call button.
+
+The issue is not just **collecting data**. If every sensor produces its own alert, nurses still have to mentally connect the dots themselves.
+
+### So our problem statement is:
+
+> **How might we continuously monitor important bedside signals, interpret them with relevant patient context, and surface clear, explainable attention needs without replacing clinical judgement?**
+
+CareHub focuses on three main gaps:
+
+| Gap | What happens now | What CareHub tries to improve |
+| --- | --- | --- |
+| 👀 Continuous visibility | Conditions may change between manual checks | Continuous bedside monitoring |
+| 🧩 Fragmented information | Pressure, IV and other signals are separate | One combined nurse-facing view |
+| 💡 Explainability | A number or alert alone may not tell nurses enough | Show the signal, context and reason behind the attention state |
+
+---
+
+## 💡 Our Solution
+
+CareHub follows one clear flow:
 
 **Bedside sensors → Signal interpretation → Patient context → Care Attention → Nurse review**
 
-### 1. Smart Pressure Mat
+### 🛏️ Smart Pressure Mat
 
-The pressure-mat interface visualises an **8 × 8 relative pressure field** and supports pressure-pattern interpretation such as posture, sustained exposure and movement/redistribution gaps.
+The pressure-mat view visualises an **8 × 8 relative pressure field** and is designed to support pressure-pattern interpretation such as:
 
-The current dashboard uses prototype/demo pressure data. The intended AI integration is a trained pressure model that can consume real pressure-mat readings and output interpreted states such as posture and persistent pressure patterns. The UI is already structured so this model output can replace the current prototype interpretation without redesigning the dashboard.
+- posture;
+- sustained pressure exposure;
+- movement / redistribution gaps.
 
-### 2. Smart IV Monitor
+The current dashboard still uses prototype/demo pressure values, but the UI is already structured so a trained pressure model can later plug in and provide outputs such as posture or persistent-pressure states.
 
-A load-cell-based IV monitor tracks estimated remaining fluid and flow behaviour. CareHub can surface low remaining volume or abnormal/interrupted flow for nurse review. This component is intentionally deterministic; it does not need a fabricated AI layer to be useful.
+### 💧 Smart IV Monitor
 
-### 3. Patient Call and Bedside Signals
+The IV monitor uses a load-cell-based setup to track:
 
-Patient-call and wetness events can enter the same attention model when available, giving the nurse one place to review monitored bedside needs.
+- estimated remaining fluid;
+- flow behaviour;
+- abnormal or interrupted flow.
 
-### 4. Explainable Care Attention
+This part is intentionally straightforward — not everything needs to be called “AI”. If a deterministic sensor rule is clearer and safer, we use that.
 
-Instead of generating an opaque clinical score, CareHub evaluates each monitored need separately and presents states such as **High Attention**, **Review / Watch**, and **Stable**.
+### 📣 Patient Call + Other Bedside Signals
 
-The dashboard shows:
+Patient-call and wetness events can also enter the same attention flow, so nurses do not need a separate screen for every bedside signal.
 
-- the raw monitored signal;
-- the interpreted bedside pattern;
-- relevant patient context such as mobility, pressure-risk band and self-reposition ability;
-- the resulting attention state;
-- a suggested review workflow; and
-- missing context when the prototype does not have enough information.
+### 🧠 Explainable Care Attention
 
-### 5. Nurse Dashboard
+Instead of giving every patient a mysterious `87/100 risk score`, CareHub evaluates monitored needs individually and surfaces states such as:
 
-The nurse-facing interface has two levels:
+- **High Attention**
+- **Review / Watch**
+- **Stable**
 
-- **Ward Overview** — a 2.5D Ward Digital Twin, Care Attention Queue, ward summary, event history and live processing flow.
-- **Bed Detail** — pressure-mat visualisation, posture interpretation, IV status, patient context, explainable attention reasoning and acknowledgement workflow for the selected bed.
+For every attention state, the dashboard tries to answer:
+
+1. **What signal changed?**
+2. **What did CareHub interpret from it?**
+3. **What patient context matters?**
+4. **Why is this being surfaced now?**
+5. **What should the nurse review next?**
 
 ---
 
-## Dashboard Preview
+## 🖥️ Dashboard
 
-### Ward Overview
+The dashboard has two main views.
 
-The first screen gives nurses a ward-level view of all monitored beds, current attention states, the Care Attention Queue, live processing flow and recent events.
+### 1️⃣ Ward Overview
+
+This is the first screen nurses see. It gives a ward-level picture of all monitored beds and helps them quickly scan what is happening.
+
+It includes:
+
+- 2.5D **Ward Digital Twin**;
+- ward summary;
+- **Care Attention Queue**;
+- live processing flow;
+- event history;
+- bed-level status at a glance.
 
 ![CareHub Ward Overview](assets/dashboard.jpg)
 
-### Bed Detail
+### 2️⃣ Bed Detail
 
-Selecting a bed opens a focused bedside view with the Smart Pressure Mattress, posture interpretation, IV monitoring, patient context, explainable reasoning and recommended nurse review workflow.
+Clicking a bed opens a focused view for that patient.
+
+It includes:
+
+- Smart Pressure Mattress visualisation;
+- posture interpretation;
+- IV monitoring;
+- patient context;
+- explainable attention reasoning;
+- recommended nurse review workflow;
+- acknowledgement flow.
 
 ![CareHub Bed Detail](assets/dashboard%20detail.jpg)
 
 ---
 
-## User Flow
+## 👩‍⚕️ User Flow
+
+A normal CareHub flow looks like this:
 
 ```text
 Patient / bedside condition changes
@@ -97,7 +138,7 @@ Relevant patient context is applied
                 ↓
 An explainable Care Attention state is surfaced
                 ↓
-Nurse sees the bed in Ward Overview / Care Attention Queue
+Nurse sees the affected bed in Ward Overview / Care Attention Queue
                 ↓
 Nurse opens Bed Detail
                 ↓
@@ -110,27 +151,28 @@ Nurse acknowledges the monitored need
 Continuous monitoring continues
 ```
 
-### Example: persistent pressure pattern
+### Example A — Persistent pressure pattern
 
 ```text
 Pressure distribution persists + movement gap increases
                          ↓
-CareHub identifies a sustained pressure pattern
+CareHub detects a sustained pressure pattern
                          ↓
 Context: high pressure-risk band + very limited mobility
                          ↓
-HIGH ATTENTION — persistent pressure pattern requires review
+HIGH ATTENTION
+Persistent pressure pattern requires review
                          ↓
-Nurse opens the bed, reviews posture / skin condition /
-positioning plan, then acknowledges the alert
+Nurse opens Bed Detail and reviews posture / skin condition /
+positioning plan before acknowledging the monitored need
 ```
 
-### Example: IV change
+### Example B — IV change
 
 ```text
 Load cell detects low remaining fluid or abnormal flow
                          ↓
-IV state is updated
+IV state changes
                          ↓
 CareHub surfaces the monitored IV need
                          ↓
@@ -139,7 +181,7 @@ Nurse opens Bed Detail and reviews the patient, IV bag and line
 
 ---
 
-## System Architecture
+## 🧩 How It Fits Together
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
@@ -169,24 +211,26 @@ Nurse opens Bed Detail and reviews the patient, IV bag and line
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Main dashboard modules
+### Main dashboard files
 
-- `carehub-attention-core.js` — context-aware, explainable attention logic.
-- `dashboard-v2.js` — dashboard state, demo/hardware data handling and rendering.
-- `dashboard-navigation.js` — Ward Overview ↔ Bed Detail navigation.
-- `demo-visuals.js` — pressure, posture, IV and processing-flow visualisation enhancement.
-- `index.html` — dashboard shell.
-- `real-render-corrections.css` / `.js` — final browser-tested presentation corrections.
+| File | Role |
+| --- | --- |
+| `carehub-attention-core.js` | Explainable attention logic |
+| `dashboard-v2.js` | Dashboard state, demo/hardware data and rendering |
+| `dashboard-navigation.js` | Ward Overview ↔ Bed Detail navigation |
+| `demo-visuals.js` | Pressure, posture, IV and processing-flow visuals |
+| `index.html` | Dashboard shell |
+| `real-render-corrections.css/js` | Final browser-tested UI corrections |
 
-The older `carehub-core.js` and `app.js` are retained only as Phase 1 reference and are not loaded by the current dashboard.
+The older `carehub-core.js` and `app.js` are kept only as Phase 1 reference and are not loaded by the current dashboard.
 
 ---
 
-## Data Contract and Hardware Integration
+## 🔌 Data + Hardware Integration
 
-The dashboard is designed to consume **standardised interpreted bedside data**, rather than coupling the UI directly to raw sensor implementation details.
+The dashboard is designed around **standardised bedside data** instead of tying the UI directly to raw sensor wiring.
 
-A current ESP32 bridge packet looks like:
+A current ESP32 bridge packet looks like this:
 
 ```json
 {
@@ -204,9 +248,9 @@ A current ESP32 bridge packet looks like:
 }
 ```
 
-The pressure visual currently expands prototype zone values into an 8 × 8 display for demonstration. Future integration can replace this with the real pressure matrix / trained pressure-model output while keeping the same nurse-facing workflow.
+For the current demo, four pressure zones are expanded visually into an 8 × 8 field. Later, the same UI can consume the real pressure matrix or trained pressure-model output without changing the overall nurse workflow.
 
-Hardware documentation:
+Hardware notes are here:
 
 - `firmware/carehub_esp32/carehub_esp32.ino`
 - `docs/hardware/wiring.md`
@@ -215,11 +259,11 @@ Hardware documentation:
 
 ---
 
-## Deployment and Running the Prototype
+## 🚀 Run / Deploy
 
-CareHub is a static front-end dashboard using JavaScript ES modules. **Do not open `index.html` directly with `file://`**; browsers can block module imports in that mode.
+CareHub uses JavaScript ES modules, so **do not double-click `index.html` directly** using `file://`. Some browsers will block the module imports and you will only see the static HTML shell.
 
-### Option A — Local dashboard / presentation mode
+### Option A — Local demo
 
 From the repository root:
 
@@ -227,7 +271,7 @@ From the repository root:
 python -m http.server 8080
 ```
 
-On Windows, if `python` is unavailable:
+On Windows, if `python` does not work:
 
 ```bash
 py -m http.server 8080
@@ -239,9 +283,9 @@ Then open:
 http://localhost:8080
 ```
 
-The dashboard starts in **simulated mode**, with four demonstration beds. This is the presentation-safe fallback and does not require physical hardware.
+The dashboard starts in **Simulated Mode** with four demo beds, so it can still be presented even without physical hardware connected.
 
-### Option B — Hardware rehearsal mode
+### Option B — Hardware rehearsal
 
 Start the mock/data bridge:
 
@@ -249,75 +293,70 @@ Start the mock/data bridge:
 npm run bridge:mock
 ```
 
-The dashboard can poll:
+Then switch the dashboard to Hardware Mode. The current bridge endpoint is:
 
 ```text
 http://localhost:3001/latest
 ```
 
-when Hardware Mode is enabled. The same bridge boundary can be used for the ESP32 integration so the UI does not need to know how individual sensors are wired.
+### Option C — Static deployment
 
-### Option C — Static web deployment
+There is no build step, so the dashboard can be hosted on any static host, for example:
 
-Because the dashboard has no build step, it can be hosted by any static host that serves the repository files over HTTP/HTTPS, for example Vercel, Netlify, GitHub Pages or a conventional web server.
+- Vercel
+- Netlify
+- GitHub Pages
+- any normal HTTP/HTTPS web server
 
-Deployment requirements:
+For deployment, make sure:
 
-- serve `index.html` from the project root;
-- preserve the relative `.js` and `.css` file paths;
-- serve JavaScript modules over HTTP/HTTPS rather than `file://`;
-- if Hardware Mode is used from a hosted dashboard, expose the bridge through a reachable API endpoint and configure the required CORS/network access instead of relying on `localhost:3001` on another machine.
+- `index.html` stays at the project root;
+- relative `.js` and `.css` paths are preserved;
+- JavaScript modules are served over HTTP/HTTPS;
+- Hardware Mode uses a reachable API endpoint rather than another machine's `localhost:3001`;
+- CORS/network access is configured if the bridge is hosted separately.
 
-For competition demonstrations, **simulated mode is intentionally retained as a fallback** so the dashboard can still demonstrate the full nurse workflow if physical hardware connectivity is unavailable.
+💡 **Competition fallback:** Simulated Mode is intentionally kept so the full nurse workflow can still be demonstrated even if hardware connectivity fails on demo day.
 
 ---
 
-## Demo Walkthrough
+## 🎬 Suggested Demo Flow
 
-A concise competition demo can follow this sequence:
+For a short competition demo:
 
-1. Start at **Ward Overview** and show the four monitored beds.
-2. Trigger or receive a persistent pressure pattern for Bed 02.
+1. Open **Ward Overview** and show the four monitored beds.
+2. Trigger a persistent pressure scenario for Bed 02.
 3. Show the Ward Digital Twin and Care Attention Queue update.
 4. Open **Bed 02 Detail**.
 5. Walk through pressure distribution, posture, movement gap and patient context.
-6. Show the explainable path: **signal → interpretation → context → attention**.
-7. Acknowledge the monitored need as the nurse.
+6. Show the explainable chain: **signal → interpretation → context → attention**.
+7. Acknowledge the monitored need.
 8. Trigger an IV abnormal-flow / low-volume scenario and show the dashboard update again.
 
-This demonstrates both the physical sensing loop and the human-in-the-loop decision-support workflow without claiming autonomous clinical triage.
+This keeps the story focused on one thing: **CareHub turns bedside signals into explainable nurse attention support.**
 
 ---
 
-## Validation and Checks
+## ✅ Current Status
 
-Run the repository checks with:
+### Already implemented
 
-```bash
-npm test
-npm run check
-```
-
-Current validation is prototype-level. Clinical workflow rules and stronger medical claims should be reviewed against healthcare guidance and validated with registered nurses before any real clinical deployment.
-
----
-
-## Current Prototype Status
-
-**Implemented**
-
-- Multi-bed Ward Overview and 2.5D Ward Digital Twin
+- Multi-bed Ward Overview
+- 2.5D Ward Digital Twin
 - Bed-specific Detail views
 - Explainable Care Attention engine
-- Pressure-mat and posture visualisation
+- Pressure-mat visualisation
+- Posture interpretation UI
 - IV monitoring visualisation
 - Patient-context handling
 - Care Attention Queue
-- Event log and acknowledgement workflow
-- Simulated scenarios and hardware bridge boundary
+- Event log
+- Acknowledge workflow
+- Simulated scenarios
+- Hardware bridge boundary
 - Responsive browser UI
 
-**Integration / validation work still required for real-world use**
+### Still needed before real-world clinical use
 
 - Real 8 × 8 pressure-mat hardware stream
 - Trained pressure/posture model output
@@ -325,5 +364,14 @@ Current validation is prototype-level. Clinical workflow rules and stronger medi
 - Production backend / persistence
 - Clinical workflow validation
 - Medical-device-grade safety, security and regulatory validation
+
+---
+
+## 🧪 Checks
+
+```bash
+npm test
+npm run check
+```
 
 CareHub is currently a **competition prototype and decision-support demonstration**, not a clinically deployed medical device.
